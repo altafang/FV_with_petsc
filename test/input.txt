@@ -1,0 +1,9 @@
+NX = 60
+NY = 60
+NZ = 60
+
+PHI_APPLIED = 1.
+
+
+
+

@@ -1,0 +1,6 @@
+# Outputs
+*.h5
+*.png
+
+# Binary/executable files
+main
