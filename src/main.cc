@@ -64,6 +64,9 @@ int main(int argc,char **args)
     NonLocalField *sigma = new NonLocalField(&da, &bc_sigma);
     PetscObjectSetName((PetscObject)sigma->global_vec, "sigma");
     
+    Field *source = new Field(&da);
+    PetscObjectSetName((PetscObject)source->global_vec, "source");
+    
     // Read sigma in from hdf5 file
     sigma->read_from_file("sigma", 0);
     sigma->send_global_to_local();
@@ -80,12 +83,13 @@ int main(int argc,char **args)
             for (k = xs; k < xs+xm; k++)
             {
                 phi->global_array[i][j][k] = 0.;
+                source->global_array[i][j][k] = 0.;
             }
         }
     }
     
-    // Create the objects necessary for solving
-    LinearSolver *linearsolver = new LinearSolver(&da, phi, sigma);
+    // Create the object(s) necessary for solving
+    LinearSolver *linearsolver = new LinearSolver(&da, phi, sigma, source);
     
     // Make ghost rows available
     sigma->send_global_to_local();
@@ -100,6 +104,7 @@ int main(int argc,char **args)
     // Cleanup
     delete phi;
     delete sigma;
+    delete source;
     
     delete linearsolver;
     

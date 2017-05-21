@@ -10,7 +10,7 @@
 class LinearSolver
 {
     public:
-        LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma);
+        LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Field *source);
         ~LinearSolver();
         void run_solver();
     
@@ -18,6 +18,7 @@ class LinearSolver
         DM *da; // Pointer to da. Also holds nx, ny, nz
         NonLocalField *phi; // The field we are solving for
         NonLocalField *sigma;
+        Field *source;
     
         Mat A;
         KSP ksp;
@@ -27,8 +28,8 @@ class LinearSolver
 };
 
 // constructor
-LinearSolver::LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma):
-    da(da), phi(phi), sigma(sigma)
+LinearSolver::LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Field *source):
+    da(da), phi(phi), sigma(sigma), source(source)
 {
     DMDAGetInfo(*da, NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     
@@ -248,21 +249,19 @@ void LinearSolver::run_solver()
         // Top side
         if (i == 0)
         {
-            thiscoeff = sigma->local_array[i][j][k];
-            coeffmzhalf = 0.5*(thiscoeff + sigma->local_array[i-1][j][k]);
-            v = 0. + coeffmzhalf*phi->bc->upper_BC_val;
+            coeffmzhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i-1][j][k]);
+            v = -source->global_array[i][j][k] + coeffmzhalf*phi->bc->upper_BC_val;
         }
         // Bottom side
         else if (i == nz - 1)
         {
-            thiscoeff = sigma->local_array[i][j][k];
-            coeffpzhalf = 0.5*(thiscoeff + sigma->local_array[i+1][j][k]);
-            v = 0. + coeffpzhalf*phi->bc->lower_BC_val;
+            coeffpzhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i+1][j][k]);
+            v = -source->global_array[i][j][k] + coeffpzhalf*phi->bc->lower_BC_val;
         }
         // Center points
         else
         {
-            v = 0.;
+            v = -source->global_array[i][j][k];
         }
         VecSetValue(b, Ii, v, INSERT_VALUES);
     }
