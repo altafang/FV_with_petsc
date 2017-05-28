@@ -42,7 +42,7 @@ void setup_params(void)
 int main(int argc,char **args)
 {
     PetscInitialize(&argc,&args,NULL,NULL);
-    
+
     // Unpack the input parameters.
     setup_params();
     
@@ -53,17 +53,17 @@ int main(int argc,char **args)
                  model::NX, model::NY, model::NZ, 1, 1, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);
     
     BC bc_phi;
-    bc_phi.upper_BC_type = 1;
+    bc_phi.upper_BC_type = constantBC;
     bc_phi.upper_BC_val = model::PHI_APPLIED;
-    bc_phi.lower_BC_type = 1;
+    bc_phi.lower_BC_type = constantBC;
     bc_phi.lower_BC_val = 0.;
     NonLocalField *phi = new NonLocalField(&da, &bc_phi);
     PetscObjectSetName((PetscObject)phi->global_vec, "phi");
     
     BC bc_sigma;
-    bc_sigma.upper_BC_type = 0;
+    bc_sigma.upper_BC_type = derivativeBC;
     bc_sigma.upper_BC_val = 0.;
-    bc_sigma.lower_BC_type = 0;
+    bc_sigma.lower_BC_type = derivativeBC;
     bc_sigma.lower_BC_val = 0.;
     NonLocalField *sigma = new NonLocalField(&da, &bc_sigma);
     PetscObjectSetName((PetscObject)sigma->global_vec, "sigma");

@@ -3,13 +3,18 @@
 
 #include "field.hpp"
 
+// Use an enum for boundary condition flags
+enum BC_type {
+    constantBC,
+    derivativeBC
+};
+
 // Upper and lower boundary conditions and values
-// TODO: improve this?
 typedef struct {
-    int upper_BC_type; // 0 means derivative BC, 1 means const
+    BC_type upper_BC_type;
     double upper_BC_val;
     
-    int lower_BC_type;
+    BC_type lower_BC_type;
     double lower_BC_val;
 } BC;
 
@@ -53,7 +58,7 @@ void NonLocalField::send_global_to_local()
     if (zs == 0)
     {
         // derivative BC
-        if (bc->upper_BC_type == 0)
+        if (bc->upper_BC_type == derivativeBC)
         {
             for (j = ys; j < ys+ym; j++)
             {
@@ -77,7 +82,7 @@ void NonLocalField::send_global_to_local()
     if (zs + zm == nz)
     {
         // derivative BC
-        if (bc->lower_BC_type == 0)
+        if (bc->lower_BC_type == derivativeBC)
         {
             for (j = ys; j < ys+ym; j++)
             {
