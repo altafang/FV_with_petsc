@@ -1,6 +1,7 @@
 # Outputs
 *.h5
 *.png
+*.pyc
 
 # Binary/executable files
 main

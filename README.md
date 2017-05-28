@@ -1,8 +1,15 @@
 # FV_with_petsc
 
-Numerically solve Poisson's equation using the finite volume method on a regular grid in 3D with the option of using multiple processors in parallel.
+This C++ code numerically solves Poisson's equation using the finite volume method on a regular grid in 3D.
+Multiple processors in parallel may be used, as specified at runtime.
 
-This package is very much under development. The goal is to eventually include a significantly broader set of features.
+To compile, run `make` in the src/ directory. To run on 2 processors, for example, execute the following command:
+
+```
+mpiexec -np 2 ./main
+```
+
+Note: this package is very much under development. The goal is to eventually include a significantly broader set of features.
 
 ## Dependencies
 - PETSc
@@ -12,8 +19,9 @@ This package is very much under development. The goal is to eventually include a
 
 ## Usage
 Inputs:
-- input.txt
-- an hdf5 file specifying the conductivity field
+- input.txt -- specifies NX, NY, NZ, DELTA_X, PHI_APPLIED
+- sigma.h5 -- specifies the conductivity field
+- source.h5 -- specifies the source field
 
 Outputs:
-- an hdf5 file with the solved field
+- phi.h5 -- an hdf5 file with the solved field

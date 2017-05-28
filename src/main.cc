@@ -8,7 +8,7 @@
 #include <petscsys.h>
 #include "field.hpp"
 #include "nonlocal_field.hpp"
-#include "input_tools.hpp"
+#include "IO_tools.hpp"
 #include "linear_solver.hpp"
 #include <math.h>
 
@@ -68,12 +68,15 @@ int main(int argc,char **args)
     NonLocalField *sigma = new NonLocalField(&da, &bc_sigma);
     PetscObjectSetName((PetscObject)sigma->global_vec, "sigma");
     
+    // Read sigma in from hdf5 file
+    sigma->read_from_file("sigma.h5");
+    sigma->send_global_to_local();
+    
     Field *source = new Field(&da);
     PetscObjectSetName((PetscObject)source->global_vec, "source");
-    
-    // Read sigma in from hdf5 file
-    sigma->read_from_file("sigma", 0);
-    sigma->send_global_to_local();
+
+    // Read source term in from hdf5 file
+    source->read_from_file("source.h5");
 
     // Get coords of where this thread is in the global domain.
     int xs, ys, zs, xm, ym, zm, i, j, k;
@@ -87,7 +90,6 @@ int main(int argc,char **args)
             for (k = xs; k < xs+xm; k++)
             {
                 phi->global_array[i][j][k] = 0.;
-                source->global_array[i][j][k] = 0.;
                 // Wrap DELTA_X in sigma
                 sigma->global_array[i][j][k] = sigma->global_array[i][j][k]/(model::DELTA_X*model::DELTA_X);
             }
@@ -105,7 +107,7 @@ int main(int argc,char **args)
     linearsolver->run_solver();
     
     // Save the solution to a file
-    phi->write_to_file("phi", 0);
+    phi->write_to_file("phi.h5");
     
     // Cleanup
     delete phi;

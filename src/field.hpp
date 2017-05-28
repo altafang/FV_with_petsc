@@ -10,14 +10,15 @@
 #include <iostream>
 #include <string>
 #include <iomanip>
+#include "IO_tools.hpp"
 
 class Field
 {
     public:
         Field(DM *da);
         ~Field();
-        void write_to_file(std::string filename, int snapshot_counter);
-        void read_from_file(std::string filename, int snapshot_counter);
+        void write_to_file(std::string filename);
+        void read_from_file(std::string filename);
     
         Vec global_vec;
         double ***global_array;
@@ -41,37 +42,21 @@ Field::~Field()
 }
 
 // Write field to an hdf5 file
-void Field::write_to_file(std::string filename, int snapshot_counter)
+void Field::write_to_file(std::string filename)
 {
     PetscViewer viewer;
-    
-    std::stringstream index_string;
-    index_string.str("");
-    index_string.clear();
-    index_string << std::setfill('0') << std::setw(3) << snapshot_counter; // %03d formatting
-    std::string complete_filename = filename + "_" + index_string.str() + ".h5";
-    
-    PetscViewerHDF5Open(PETSC_COMM_WORLD, complete_filename.c_str(), FILE_MODE_WRITE, &viewer);
+    PetscViewerHDF5Open(PETSC_COMM_WORLD, filename.c_str(), FILE_MODE_WRITE, &viewer);
     VecView(global_vec, viewer);
     PetscViewerDestroy(&viewer);
-    return;
 }
 
 // Read field from an hdf5 file
-void Field::read_from_file(std::string filename, int snapshot_counter)
+void Field::read_from_file(std::string filename)
 {
     PetscViewer viewer;
-    
-    std::stringstream index_string;
-    index_string.str("");
-    index_string.clear();
-    index_string << std::setfill('0') << std::setw(3) << snapshot_counter; // %03d formatting
-    std::string complete_filename = filename + "_" + index_string.str() + ".h5";
-    
-    PetscViewerHDF5Open(PETSC_COMM_WORLD, complete_filename.c_str(), FILE_MODE_READ, &viewer);
+    PetscViewerHDF5Open(PETSC_COMM_WORLD, filename.c_str(), FILE_MODE_READ, &viewer);
     VecLoad(global_vec, viewer);
     PetscViewerDestroy(&viewer);
-    return;
 }
 
 #endif

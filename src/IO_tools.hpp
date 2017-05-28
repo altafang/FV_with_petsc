@@ -1,9 +1,10 @@
-// This was copy-pasted from Ryan Davis's PADI software: https://github.com/rsdavis/ParallelDiffuseInterface-PADI
+// Most of this was copy-pasted from Ryan Davis's PADI software:
+// https://github.com/rsdavis/ParallelDiffuseInterface-PADI
 // It provides utilities for reading input parameters from a text file.
 // The logging code has been removed.
 
-#ifndef INPUT_TOOLS_H
-#define INPUT_TOOLS_H
+#ifndef IO_TOOLS_H
+#define IO_TOOLS_H
 
 #include <iostream>
 #include <map>
@@ -16,6 +17,17 @@
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
+
+// utility function for appending numbers to hdf5 filenames, if there is a series
+std::string number_filename(std::string base_filename, int counter)
+{
+    std::stringstream index_string;
+    index_string.str("");
+    index_string.clear();
+    index_string << std::setfill('0') << std::setw(3) << counter; // %03d formatting
+    std::string complete_filename = base_filename + "_" + index_string.str() + ".h5";
+    return complete_filename;
+}
 
 template <typename T> // primary template
 inline void unpack(std::map<std::string, std::string> params, std::string name, T &parameter)
@@ -76,7 +88,7 @@ inline void unpack(std::map<std::string, int> name_index, std::string name, int 
 
 void readParameters(std::map<std::string, std::string> &params)
 {
-    
+
     // This function parses the input file.
     // It reads a key-value pair from any line involving an "=" sign.
     // All key-value are stored as string in params for use later.
