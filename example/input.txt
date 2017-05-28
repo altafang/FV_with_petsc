@@ -2,6 +2,8 @@ NX = 60
 NY = 60
 NZ = 60
 
+DELTA_X = 1.
+
 PHI_APPLIED = 1.
 
 

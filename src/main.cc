@@ -19,6 +19,8 @@ namespace model
     int NY;
     int NZ;
     
+    double DELTA_X;
+    
     double PHI_APPLIED;
 }
 
@@ -31,6 +33,8 @@ void setup_params(void)
     unpack(params, "NX", model::NX);
     unpack(params, "NY", model::NY);
     unpack(params, "NZ", model::NZ);
+    
+    unpack(params, "DELTA_X", model::DELTA_X);
     
     unpack(params, "PHI_APPLIED", model::PHI_APPLIED);
 }
@@ -84,6 +88,8 @@ int main(int argc,char **args)
             {
                 phi->global_array[i][j][k] = 0.;
                 source->global_array[i][j][k] = 0.;
+                // Wrap DELTA_X in sigma
+                sigma->global_array[i][j][k] = sigma->global_array[i][j][k]*model::DELTA_X*model::DELTA_X;
             }
         }
     }
