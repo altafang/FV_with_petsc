@@ -89,7 +89,7 @@ int main(int argc,char **args)
                 phi->global_array[i][j][k] = 0.;
                 source->global_array[i][j][k] = 0.;
                 // Wrap DELTA_X in sigma
-                sigma->global_array[i][j][k] = sigma->global_array[i][j][k]*model::DELTA_X*model::DELTA_X;
+                sigma->global_array[i][j][k] = sigma->global_array[i][j][k]/(model::DELTA_X*model::DELTA_X);
             }
         }
     }
