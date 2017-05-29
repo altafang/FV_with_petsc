@@ -6,6 +6,12 @@ The solve can be done in parallel on multiple processors as specified at runtime
 The domain is only decomposed along the 'z' direction, which is the direction of applied constant-value boundary conditions. 
 Lateral boundary conditions may be either zero-flux or periodic.
 
+The generalized Poisson equation solved here is:
+
+```
+div (sigma grad phi) = source
+```
+
 Note: this package is very much under development. The goal is to eventually include a significantly broader set of features.
 
 ## Dependencies
