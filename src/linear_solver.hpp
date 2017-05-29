@@ -25,13 +25,14 @@ class LinearSolver
         PC pc;
         Vec b;
         int nx, ny, nz;
+        DMBoundaryType x_BC_type, y_BC_type; // Lateral boundary condition types
 };
 
 // constructor
 LinearSolver::LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Field *source):
     da(da), phi(phi), sigma(sigma), source(source)
 {
-    DMDAGetInfo(*da, NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    DMDAGetInfo(*da, NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, &x_BC_type, &y_BC_type, NULL, NULL);
     
     MatCreate(PETSC_COMM_WORLD,&A);
     MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,nx*ny*nz,nx*ny*nz);
@@ -92,8 +93,6 @@ void LinearSolver::run_solver()
     int i,j,k,Ii,J,Istart,Iend;
     double v;
     
-    // XXX FIXME: types of BCs are currently hard-coded in
-    
     // Currently, all PETSc parallel matrix formats are partitioned by
     // contiguous chunks of rows across the processors.  Determine which
     // rows of the matrix are locally owned.
@@ -126,7 +125,7 @@ void LinearSolver::run_solver()
         coeffpzhalf = 0.5*(thiscoeff + sigma->local_array[i+1][j][k]);
         coeffmzhalf = 0.5*(thiscoeff + sigma->local_array[i-1][j][k]);
         
-        // Note: assumes certain boundary conditions.
+        // Fill in the finite-volume stencil
         if (i>0)
         {
             J = Ii - nx*ny;
@@ -142,89 +141,93 @@ void LinearSolver::run_solver()
         if (j>0)
         {
             J = Ii - nx;
-            // zero-flux lateral boundary condition
-            if (j == ny-1)
-            {
-                v = -coeffmyhalf-coeffpyhalf;
-            }
-            else
-            {
-                v = -coeffmyhalf;
-            }
             v = -coeffmyhalf;
             MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
         }
         if (j<ny-1)
         {
             J = Ii + nx;
-            // zero-flux lateral boundary condition
-            if (j == 0)
-            {
-                v = -coeffmyhalf-coeffpyhalf;
-            }
-            else
-            {
-                v = -coeffpyhalf;
-            }
             v = -coeffpyhalf;
             MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
         }
         if (k>0)
         {
             J = Ii - 1;
-            // zero-flux lateral boundary condition
-            if (k == nx-1)
-            {
-                v = -coeffmxhalf-coeffpxhalf;
-            }
-            else
-            {
-                v = -coeffmxhalf;
-            }
             v = -coeffmxhalf;
             MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
         }
         if (k<nx-1)
         {
             J = Ii + 1;
-            // zero-flux lateral boundary condition
-            if (k == 0)
-            {
-                v = -coeffmxhalf-coeffpxhalf;
-            }
-            else
-            {
-                v = -coeffpxhalf;
-            }
             v = -coeffpxhalf;
             MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
         }
         
-//        // Periodic boundary conditions in x and y
-//        if (j == 0)
-//        {
-//            J = Ii + nx*ny - nx;
-//            v = -coeffmyhalf;
-//            MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
-//        }
-//        if (j == ny - 1)
-//        {
-//            J = Ii - nx*ny + nx;
-//            v = -coeffpyhalf;
-//            MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
-//        }
-//        if (k == 0)
-//        {
-//            J = Ii + nx - 1;
-//            v = -coeffmxhalf;
-//            MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
-//        }
-//        if (k == nx - 1)
-//        {
-//            J = Ii - nx + 1;
-//            v = -coeffpxhalf;
-//            MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
-//        }
+        // Periodic boundary conditions in y
+        if (y_BC_type == DM_BOUNDARY_PERIODIC)
+        {
+            if (j == 0)
+            {
+                J = Ii + nx*ny - nx;
+                v = -coeffmyhalf;
+                MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
+            }
+            if (j == ny - 1)
+            {
+                J = Ii - nx*ny + nx;
+                v = -coeffpyhalf;
+                MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
+            }
+        }
+        // Zero-flux boundary conditions in y. GHOSTED instead of MIRROR in 3D
+        else if (y_BC_type == DM_BOUNDARY_GHOSTED)
+        {
+            if (j == 0)
+            {
+                J = Ii + nx;
+                v = -coeffmyhalf-coeffpyhalf;
+                MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
+            }
+            if (j == ny - 1)
+            {
+                J = Ii - nx;
+                v = -coeffmyhalf-coeffpyhalf;
+                MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
+            }
+        }
+        
+        // Periodic boundary conditions in x
+        if (x_BC_type == DM_BOUNDARY_PERIODIC)
+        {
+            if (k == 0)
+            {
+                J = Ii + nx - 1;
+                v = -coeffmxhalf;
+                MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
+            }
+            if (k == nx - 1)
+            {
+                J = Ii - nx + 1;
+                v = -coeffpxhalf;
+                MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
+            }
+        }
+        // Zero-flux boundary conditions in x. GHOSTED instead of MIRROR in 3D
+        else if (x_BC_type == DM_BOUNDARY_GHOSTED)
+        {
+            if (k == 0)
+            {
+                J = Ii + 1;
+                v = -coeffmxhalf-coeffpxhalf;
+                MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
+            }
+            if (k == nx - 1)
+            {
+                J = Ii - 1;
+                v = -coeffmxhalf-coeffpxhalf;
+                MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
+            }
+        }
         
         // Diagonal term
         v = coeffmxhalf + coeffmyhalf + coeffmzhalf + coeffpxhalf + coeffpyhalf + coeffpzhalf;

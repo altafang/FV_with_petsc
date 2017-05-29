@@ -48,7 +48,11 @@ int main(int argc,char **args)
     
     // Set up the distributed array used for all fields.
     DM da;
-    // Note: DM_BOUNDARY_MIRROR is not yet implemented in 3D so have to manually fill those cells
+    
+    // Lateral boundary conditions may be either periodic or zero-flux
+    // For periodic, use DM_BOUNDARY_PERIODIC
+    // For zero-flux, typically one should use DM_BOUNDARY_MIRROR
+    // But, in 3D DM_BOUNDARY_MIRROR is not yet implemented so use DM_BOUNDARY_GHOSTED and manually fill the ghost cells
     DMDACreate3d(PETSC_COMM_WORLD, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, DM_BOUNDARY_GHOSTED, DMDA_STENCIL_STAR, \
                  model::NX, model::NY, model::NZ, 1, 1, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);
     

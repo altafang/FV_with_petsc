@@ -53,7 +53,8 @@ void NonLocalField::send_global_to_local()
     // Fill in boundary conditions
     int xs, ys, zs, xm, ym, zm, j, k;
     int nx, ny, nz;
-    DMDAGetInfo(*da, NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    DMBoundaryType x_BC_type, y_BC_type;
+    DMDAGetInfo(*da, NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, &x_BC_type, &y_BC_type, NULL, NULL);
     DMDAGetCorners(*da, &xs, &ys, &zs, &xm, &ym, &zm);
     if (zs == 0)
     {
@@ -104,46 +105,54 @@ void NonLocalField::send_global_to_local()
         }
     }
     
-    // Use zero-derivative boundary conditions.
-    // DM_BOUNDARY_MIRROR is not yet implemented in 3D so have to manually fill those cells...
-    if (ys == 0)
+    if (y_BC_type == DM_BOUNDARY_GHOSTED)
     {
-        for (j = zs; j < zs+zm; j++)
+        // Use zero-derivative boundary conditions.
+        // DM_BOUNDARY_MIRROR is not yet implemented in 3D so have to manually fill these cells
+        if (ys == 0)
         {
-            for (k = xs; k < xs+xm; k++)
+            for (j = zs; j < zs+zm; j++)
             {
-                local_array[j][-1][k] = global_array[j][1][k];
+                for (k = xs; k < xs+xm; k++)
+                {
+                    local_array[j][-1][k] = global_array[j][1][k];
+                }
             }
         }
-    }
-    if (ys + ym == ny)
-    {
-        for (j = zs; j < zs+zm; j++)
+        if (ys + ym == ny)
         {
-            for (k = xs; k < xs+xm; k++)
+            for (j = zs; j < zs+zm; j++)
             {
-                local_array[j][ny][k] = global_array[j][ny-2][k];
+                for (k = xs; k < xs+xm; k++)
+                {
+                    local_array[j][ny][k] = global_array[j][ny-2][k];
+                }
             }
         }
     }
     
-    if (xs == 0)
+    if (x_BC_type == DM_BOUNDARY_GHOSTED)
     {
-        for (j = zs; j < zs+zm; j++)
+        // Use zero-derivative boundary conditions.
+        // DM_BOUNDARY_MIRROR is not yet implemented in 3D so have to manually fill these cells
+        if (xs == 0)
         {
-            for (k = ys; k < ys+ym; k++)
+            for (j = zs; j < zs+zm; j++)
             {
-                local_array[j][k][-1] = global_array[j][k][1];
+                for (k = ys; k < ys+ym; k++)
+                {
+                    local_array[j][k][-1] = global_array[j][k][1];
+                }
             }
         }
-    }
-    if (xs + xm == nx)
-    {
-        for (j = zs; j < zs+zm; j++)
+        if (xs + xm == nx)
         {
-            for (k = ys; k < ys+ym; k++)
+            for (j = zs; j < zs+zm; j++)
             {
-                local_array[j][k][nx] = global_array[j][k][nx-2];
+                for (k = ys; k < ys+ym; k++)
+                {
+                    local_array[j][k][nx] = global_array[j][k][nx-2];
+                }
             }
         }
     }
