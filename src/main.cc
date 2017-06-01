@@ -94,14 +94,12 @@ int main(int argc,char **args)
             for (k = xs; k < xs+xm; k++)
             {
                 phi->global_array[i][j][k] = 0.;
-                // Wrap DELTA_X in sigma
-                sigma->global_array[i][j][k] = sigma->global_array[i][j][k]/(model::DELTA_X*model::DELTA_X);
             }
         }
     }
     
     // Create the object(s) necessary for solving
-    LinearSolver *linearsolver = new LinearSolver(&da, phi, sigma, source);
+    LinearSolver *linearsolver = new LinearSolver(&da, phi, sigma, source, model::DELTA_X);
     
     // Make ghost rows available
     sigma->send_global_to_local();

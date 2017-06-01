@@ -10,7 +10,7 @@
 class LinearSolver
 {
     public:
-        LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Field *source);
+        LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Field *source, double DELTA_X);
         ~LinearSolver();
         void run_solver();
     
@@ -25,12 +25,13 @@ class LinearSolver
         PC pc;
         Vec b;
         int nx, ny, nz;
+        double DELTA_X;
         DMBoundaryType x_BC_type, y_BC_type; // Lateral boundary condition types
 };
 
 // constructor
-LinearSolver::LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Field *source):
-    da(da), phi(phi), sigma(sigma), source(source)
+LinearSolver::LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Field *source, double DELTA_X):
+    da(da), phi(phi), sigma(sigma), source(source), DELTA_X(DELTA_X)
 {
     DMDAGetInfo(*da, NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, &x_BC_type, &y_BC_type, NULL, NULL);
     
@@ -110,20 +111,19 @@ void LinearSolver::run_solver()
     // instead of J = I +- m as you might expect. The more standard ordering
     // would first do all variables for y = h, then y = 2h etc.
     
-    double thiscoeff, coeffpxhalf, coeffpyhalf, coeffpzhalf, coeffmxhalf, coeffmyhalf, coeffmzhalf;
+    double coeffpxhalf, coeffpyhalf, coeffpzhalf, coeffmxhalf, coeffmyhalf, coeffmzhalf;
     for (Ii=Istart; Ii<Iend; Ii++)
     {
         i = Ii/(nx*ny); j = (Ii - i*(nx*ny))/nx; k = Ii - j*nx - i*nx*ny;
         
         // Careful with signs: here, positive on the diagonals.
         // Retrieve coeff values, including neighboring values.
-        thiscoeff = sigma->local_array[i][j][k];
-        coeffpxhalf = 0.5*(thiscoeff + sigma->local_array[i][j][k+1]);
-        coeffmxhalf = 0.5*(thiscoeff + sigma->local_array[i][j][k-1]);
-        coeffpyhalf = 0.5*(thiscoeff + sigma->local_array[i][j+1][k]);
-        coeffmyhalf = 0.5*(thiscoeff + sigma->local_array[i][j-1][k]);
-        coeffpzhalf = 0.5*(thiscoeff + sigma->local_array[i+1][j][k]);
-        coeffmzhalf = 0.5*(thiscoeff + sigma->local_array[i-1][j][k]);
+        coeffpxhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i][j][k+1])/(DELTA_X*DELTA_X);
+        coeffmxhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i][j][k-1])/(DELTA_X*DELTA_X);
+        coeffpyhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i][j+1][k])/(DELTA_X*DELTA_X);
+        coeffmyhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i][j-1][k])/(DELTA_X*DELTA_X);
+        coeffpzhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i+1][j][k])/(DELTA_X*DELTA_X);
+        coeffmzhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i-1][j][k])/(DELTA_X*DELTA_X);
         
         // Fill in the finite-volume stencil
         if (i>0)
@@ -229,6 +229,27 @@ void LinearSolver::run_solver()
             }
         }
         
+        // Derivative boundary conditions in z
+        if (phi->bc->upper_BC_type == derivativeBC)
+        {
+            if (i == 0)
+            {
+                J = Ii + nx*ny;
+                v = -coeffmzhalf-coeffpzhalf;
+                MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
+            }
+        }
+        // Derivative boundary conditions in z
+        if (phi->bc->lower_BC_type == derivativeBC)
+        {
+            if (i == nz-1)
+            {
+                J = Ii - nx*ny;
+                v = -coeffmzhalf-coeffpzhalf;
+                MatSetValues(A,1,&Ii,1,&J,&v,INSERT_VALUES);
+            }
+        }
+        
         // Diagonal term
         v = coeffmxhalf + coeffmyhalf + coeffmzhalf + coeffpxhalf + coeffpyhalf + coeffpzhalf;
         
@@ -252,14 +273,32 @@ void LinearSolver::run_solver()
         // Top side
         if (i == 0)
         {
-            coeffmzhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i-1][j][k]);
-            v = -source->global_array[i][j][k] + coeffmzhalf*phi->bc->upper_BC_val;
+            coeffmzhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i-1][j][k])/(DELTA_X*DELTA_X);
+            v = -source->global_array[i][j][k];
+            
+            if (phi->bc->upper_BC_type == constantBC)
+            {
+                v += coeffmzhalf*phi->bc->upper_BC_val;
+            }
+            else
+            {
+                v += 2.*DELTA_X*coeffmzhalf*phi->bc->upper_BC_val;
+            }
         }
         // Bottom side
         else if (i == nz - 1)
         {
             coeffpzhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i+1][j][k]);
-            v = -source->global_array[i][j][k] + coeffpzhalf*phi->bc->lower_BC_val;
+            v = -source->global_array[i][j][k];
+            
+            if (phi->bc->lower_BC_type == constantBC)
+            {
+                v += coeffpzhalf*phi->bc->lower_BC_val;
+            }
+            else
+            {
+                v += 2.*DELTA_X*coeffpzhalf*phi->bc->lower_BC_val;
+            }
         }
         // Center points
         else
