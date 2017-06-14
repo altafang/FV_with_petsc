@@ -15,7 +15,6 @@ class LinearSolver
         void run_solver();
     
     private:
-        DM *da; // Pointer to da. Also holds nx, ny, nz
         NonLocalField *phi; // The field we are solving for
         NonLocalField *sigma;
         Field *source;
@@ -31,12 +30,13 @@ class LinearSolver
 
 // constructor
 LinearSolver::LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Field *source, double DELTA_X):
-    da(da), phi(phi), sigma(sigma), source(source), DELTA_X(DELTA_X)
+    phi(phi), sigma(sigma), source(source), DELTA_X(DELTA_X)
 {
     DMDAGetInfo(*da, NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, &x_BC_type, &y_BC_type, NULL, NULL);
     
+    int total_N = nx*ny*nz;
     MatCreate(PETSC_COMM_WORLD,&A);
-    MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,nx*ny*nz,nx*ny*nz);
+    MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,total_N,total_N);
     MatSetFromOptions(A);
     
     int n_stencil_nonzero = 7; // For 3D
@@ -59,7 +59,7 @@ LinearSolver::LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Fie
     // below).
     
     VecCreate(PETSC_COMM_WORLD,&b);
-    VecSetSizes(b,PETSC_DECIDE,nx*ny*nz);
+    VecSetSizes(b,PETSC_DECIDE,total_N);
     VecSetFromOptions(b);
     
     // Create linear solver context
