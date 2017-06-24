@@ -27,10 +27,10 @@ Note: this package is very much under development. The goal is to eventually inc
 
 ## Usage
 
-To compile, run `make` in the src/ directory. To run on 2 processors, for example, execute the following command:
+To compile, run `make`. The executable `solve_poisson` will be in the `bin/` directory. To run on 2 processors, for example, execute the following command:
 
 ```
-mpiexec -np 2 ./main
+mpiexec -np 2 ./solve_poisson
 ```
 
 Inputs:
