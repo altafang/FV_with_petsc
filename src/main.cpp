@@ -6,11 +6,9 @@
 //    mpiexec -np 2 ./main
 
 #include <petscsys.h>
-#include "field.hpp"
-#include "nonlocal_field.hpp"
 #include "IO_tools.hpp"
 #include "linear_solver.hpp"
-#include <math.h>
+#include <cmath>
 
 // namespace for the constants from the input file
 namespace model

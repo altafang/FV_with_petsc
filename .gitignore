@@ -4,4 +4,4 @@
 *.pyc
 
 # Binary/executable files
-main
+bin/*
