@@ -34,12 +34,15 @@ mpiexec -np 2 ./solve_poisson
 ```
 
 Inputs:
-- input.txt -- text file that specifies NX, NY, NZ, DELTA_X, PHI_APPLIED
+- input.txt -- text file that specifies NX, NY, NZ, DELTA_X, PHI_UPPER, PHI_LOWER, X_BC_TYPE, Y_BC_TYPE
+where X_BC_TYPE and Y_BC_TYPE are either periodic or zeroflux 
 - sigma.h5 -- hdf5 file that specifies the conductivity field
 - source.h5 -- hdf5 that specifies the source field
 
 Outputs:
 - phi.h5 -- hdf5 file with the solved field
+
+For example(s), see the `test/` directory.
 
 ## Installing PETSc
 

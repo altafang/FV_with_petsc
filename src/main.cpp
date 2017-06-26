@@ -46,6 +46,7 @@ void setup_params(void)
     unpack(params, "Y_BC_TYPE", model::y_BC_type);    
 }
 
+// Convert user-input lateral BC type strings to appropriate actual BC options 
 DMBoundaryType get_BC_type(std::string type_name)
 {
     std::unordered_map<std::string, DMBoundaryType> lateral_BCs = {{"zeroflux", DM_BOUNDARY_GHOSTED}, {"periodic", DM_BOUNDARY_PERIODIC}};
