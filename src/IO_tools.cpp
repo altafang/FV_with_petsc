@@ -23,7 +23,7 @@ void unpack(std::map<std::string, std::string> hash, std::string name, double & 
     std::map<std::string, std::string>::iterator it;
     it = hash.find(name);
     if (it==hash.end()) { // parameter not found
-        PetscPrintf(PETSC_COMM_WORLD, "Parameter not found\n");
+        PetscPrintf(PETSC_COMM_WORLD, "Parameter %s not found\n", name.c_str());
         MPI_Abort(PETSC_COMM_WORLD, 0);
     } else { // parameter found
         parameter = std::stod(it->second);
@@ -36,23 +36,23 @@ void unpack(std::map<std::string, std::string> hash, std::string name, int & par
     std::map<std::string, std::string>::iterator it;
     it = hash.find(name);
     if (it==hash.end()) { // parameter not found
-        PetscPrintf(PETSC_COMM_WORLD, "Parameter not found\n");
+        PetscPrintf(PETSC_COMM_WORLD, "Parameter %s not found\n", name.c_str());
         MPI_Abort(PETSC_COMM_WORLD, 0);
     } else { // parameter found
         parameter = std::stoi(it->second);
     }
 }
 
-template <> // explicit specialization for T = float
-void unpack(std::map<std::string, std::string> hash, std::string name, float & parameter)
+template <> // explicit specialization for T = string
+void unpack(std::map<std::string, std::string> hash, std::string name, std::string & parameter)
 {
     std::map<std::string, std::string>::iterator it;
     it = hash.find(name);
     if (it==hash.end()) { // parameter not found
-        PetscPrintf(PETSC_COMM_WORLD, "Parameter not found\n");
+        PetscPrintf(PETSC_COMM_WORLD, "Parameter %s not found\n", name.c_str());
         MPI_Abort(PETSC_COMM_WORLD, 0);
     } else { // parameter found
-        parameter = std::stof(it->second);
+        parameter = it->second;
     }
 }
 
@@ -61,7 +61,7 @@ void unpack(std::map<std::string, int> name_index, std::string name, int &index)
     std::map<std::string, int>::iterator it;
     it = name_index.find(name);
     if (it==name_index.end()) { // parameter not found
-        PetscPrintf(PETSC_COMM_WORLD, "Parameter not found\n");
+        PetscPrintf(PETSC_COMM_WORLD, "Parameter %s not found\n", name.c_str());
         MPI_Abort(PETSC_COMM_WORLD, 0);
     } else { // parameter found
         index = it->second;

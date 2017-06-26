@@ -6,11 +6,12 @@
 class LinearSolver
 {
     public:
-        LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Field *source, double DELTA_X);
+        LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Field *source);
         ~LinearSolver();
-        void run_solver();
+        void run_solver(double DELTA_X);
     
     private:
+        DM *da;
         NonLocalField *phi; // The field we are solving for
         NonLocalField *sigma;
         Field *source;
@@ -19,9 +20,6 @@ class LinearSolver
         KSP ksp;
         PC pc;
         Vec b;
-        int nx, ny, nz;
-        double DELTA_X;
-        DMBoundaryType x_BC_type, y_BC_type; // Lateral boundary condition types
 };
 
 

@@ -4,10 +4,11 @@
 #include "linear_solver.hpp"
 
 // constructor
-LinearSolver::LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Field *source, double DELTA_X):
-    phi(phi), sigma(sigma), source(source), DELTA_X(DELTA_X)
+LinearSolver::LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Field *source):
+    da(da), phi(phi), sigma(sigma), source(source)
 {
-    DMDAGetInfo(*da, NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, &x_BC_type, &y_BC_type, NULL, NULL);
+    int nx, ny, nz;
+    DMDAGetInfo(*da, NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     
     int total_N = nx*ny*nz;
     MatCreate(PETSC_COMM_WORLD,&A);
@@ -20,7 +21,7 @@ LinearSolver::LinearSolver(DM *da, NonLocalField *phi, NonLocalField *sigma, Fie
     
     // Create parallel vectors.
     // - We form 1 vector from scratch and then duplicate as needed.
-    // - When using VecCreate(), VecSetSizes and VecSetFromOptions()
+    // - When u sing VecCreate(), VecSetSizes and VecSetFromOptions()
     // in this example, we specify only the
     // vector's global dimension; the parallel partitioning is determined
     // at runtime.
@@ -64,8 +65,12 @@ LinearSolver::~LinearSolver()
     KSPDestroy(&ksp);
 }
 
-void LinearSolver::run_solver()
+void LinearSolver::run_solver(double DELTA_X)
 {
+    int nx, ny, nz;
+    DMBoundaryType x_BC_type, y_BC_type; // Lateral boundary condition types
+    DMDAGetInfo(*da, NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, &x_BC_type, &y_BC_type, NULL, NULL);
+
     int i,j,k,Ii,J,Istart,Iend;
     double v;
     
