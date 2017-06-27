@@ -19,6 +19,8 @@ NonLocalField<T>::NonLocalField(DM *da, BC_type lower_BC_type, double lower_BC_v
 template <typename T>
 NonLocalField<T>::~NonLocalField()
 {
+    // Notice that you have to use 'this' to access base class variables when using templates.
+    // See https://stackoverflow.com/questions/4643074/why-do-i-have-to-access-template-base-class-members-through-the-this-pointer
     DMDAVecRestoreArray(*(this->da), local_vec, &local_array);
     VecDestroy(&local_vec);
 }
@@ -151,7 +153,57 @@ void NonLocalField<double***>::send_global_to_local()
 }
 
 // Implementation specific to 2D
-// TODO
+template<>
+void NonLocalField<double**>::send_global_to_local()
+{
+    DMGlobalToLocalBegin(*(this->da), global_vec, INSERT_VALUES, local_vec);
+    DMGlobalToLocalEnd(*(this->da), global_vec, INSERT_VALUES, local_vec);
+    
+    /* Fill in upper and lower boundary conditions */
+    int xs, ys, xm, ym, j;
+    int ny;
+    DMDAGetInfo(*(this->da), NULL, NULL, &ny, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
+    DMDAGetCorners(*(this->da), &xs, &ys, NULL, &xm, &ym, NULL);
+    if (ys == 0)
+    {
+        // derivative BC
+        if (bc.upper_BC_type == 0)
+        {
+            for (j = xs; j < xs+xm; j++)
+            {
+                local_array[-1][j] = global_array[1][j] - 2.*bc.upper_BC_val;
+            }
+        }
+        else // const BC
+        {
+            for (j = xs; j < xs+xm; j++)
+            {
+                local_array[-1][j] = bc.upper_BC_val;
+            }
+        }
+    }
+    if (ys + ym == ny)
+    {
+        // derivative BC
+        if (bc.lower_BC_type == 0)
+        {
+            for (j = xs; j < xs+xm; j++)
+            {
+                local_array[ny][j] = global_array[ny-2][j] + 2.*bc.lower_BC_val;
+            }
+        }
+        else // const BC
+        {
+            for (j = xs; j < xs+xm; j++)
+            {
+                local_array[ny][j] = bc.lower_BC_val;
+            }
+        }
+    }
+    
+    return;
+}
+
 
 
 
