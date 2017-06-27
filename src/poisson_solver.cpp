@@ -20,11 +20,8 @@ DMBoundaryType& get_BC_type(std::string& type_name, bool warn=false)
     }
 }
 
-// Constructor
-PoissonSolver::PoissonSolver(std::string input_file)
+void PoissonSolver::read_input(std::string input_file)
 {
-    // Read input parameters from text file called "input.txt"
-    // and unpack the input parameters.
     std::map<std::string, std::string> params;
     read_parameters(params, input_file);
     
@@ -37,31 +34,31 @@ PoissonSolver::PoissonSolver(std::string input_file)
     unpack(params, "PHI_UPPER", PHI_UPPER);
     unpack(params, "PHI_LOWER", PHI_LOWER);
     
-    unpack(params, "X_BC_TYPE", x_BC_type);
-    unpack(params, "Y_BC_TYPE", y_BC_type); 
+    unpack(params, "X_BC_TYPE", X_BC_TYPE);
+    unpack(params, "Y_BC_TYPE", Y_BC_TYPE); 
+}
+
+// Constructor
+PoissonSolver::PoissonSolver(std::string input_file)
+{
+    // Read input parameters from text file called "input.txt"
+    // and unpack the input parameters.
+    read_input(input_file);
     
     // Set up the distributed array used for all fields.
     // Lateral boundary conditions may be either periodic or zero-flux
     // For periodic, use DM_BOUNDARY_PERIODIC
     // For zero-flux, typically one should use DM_BOUNDARY_MIRROR
     // But, in 3D DM_BOUNDARY_MIRROR is not yet implemented so use DM_BOUNDARY_GHOSTED and manually fill the ghost cells    
-    DMDACreate3d(PETSC_COMM_WORLD, get_BC_type(x_BC_type, true), get_BC_type(y_BC_type, true), DM_BOUNDARY_GHOSTED, DMDA_STENCIL_STAR, \
+    DMDACreate3d(PETSC_COMM_WORLD, get_BC_type(X_BC_TYPE, true), get_BC_type(Y_BC_TYPE, true), DM_BOUNDARY_GHOSTED, DMDA_STENCIL_STAR, \
                  NX, NY, NZ, 1, 1, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);
     
-    BC bc_phi;
-    bc_phi.upper_BC_type = constantBC;
-    bc_phi.upper_BC_val = PHI_UPPER;
-    bc_phi.lower_BC_type = constantBC;
-    bc_phi.lower_BC_val = PHI_LOWER;
-    phi = new NonLocalField(&da, &bc_phi);
+    // Initialize with z boundary conditions
+    phi = new NonLocalField(&da, constantBC, PHI_LOWER, constantBC, PHI_UPPER);
     PetscObjectSetName((PetscObject)phi->global_vec, "phi");
     
-    BC bc_sigma;
-    bc_sigma.upper_BC_type = derivativeBC;
-    bc_sigma.upper_BC_val = 0.;
-    bc_sigma.lower_BC_type = derivativeBC;
-    bc_sigma.lower_BC_val = 0.;
-    sigma = new NonLocalField(&da, &bc_sigma);
+    // Zero derivative boundary conditions in z
+    sigma = new NonLocalField(&da, derivativeBC, 0., derivativeBC, 0.);
     PetscObjectSetName((PetscObject)sigma->global_vec, "sigma");
     
     // Read sigma in from hdf5 file
@@ -185,7 +182,7 @@ void PoissonSolver::run_solver(std::string output_file)
         }
         
         // Periodic boundary conditions in y
-        if (get_BC_type(y_BC_type) == DM_BOUNDARY_PERIODIC)
+        if (get_BC_type(Y_BC_TYPE) == DM_BOUNDARY_PERIODIC)
         {
             if (j == 0)
             {
@@ -201,7 +198,7 @@ void PoissonSolver::run_solver(std::string output_file)
             }
         }
         // Zero-flux boundary conditions in y. GHOSTED instead of MIRROR in 3D
-        else if (get_BC_type(y_BC_type) == DM_BOUNDARY_GHOSTED)
+        else if (get_BC_type(Y_BC_TYPE) == DM_BOUNDARY_GHOSTED)
         {
             if (j == 0)
             {
@@ -216,9 +213,13 @@ void PoissonSolver::run_solver(std::string output_file)
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
             }
         }
+        else
+        {
+            PetscPrintf(PETSC_COMM_WORLD, "lateral BC problem!\n");
+        }
         
         // Periodic boundary conditions in x
-        if (get_BC_type(x_BC_type) == DM_BOUNDARY_PERIODIC)
+        if (get_BC_type(X_BC_TYPE) == DM_BOUNDARY_PERIODIC)
         {
             if (k == 0)
             {
@@ -234,7 +235,7 @@ void PoissonSolver::run_solver(std::string output_file)
             }
         }
         // Zero-flux boundary conditions in x. GHOSTED instead of MIRROR in 3D
-        else if (get_BC_type(x_BC_type) == DM_BOUNDARY_GHOSTED)
+        else if (get_BC_type(X_BC_TYPE) == DM_BOUNDARY_GHOSTED)
         {
             if (k == 0)
             {
@@ -249,9 +250,13 @@ void PoissonSolver::run_solver(std::string output_file)
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
             }
         }
+        else
+        {
+            PetscPrintf(PETSC_COMM_WORLD, "lateral BC problem!\n");
+        }
         
         // Derivative boundary conditions in z
-        if (phi->bc->upper_BC_type == derivativeBC)
+        if (phi->bc.upper_BC_type == derivativeBC)
         {
             if (i == 0)
             {
@@ -261,7 +266,7 @@ void PoissonSolver::run_solver(std::string output_file)
             }
         }
         // Derivative boundary conditions in z
-        if (phi->bc->lower_BC_type == derivativeBC)
+        if (phi->bc.lower_BC_type == derivativeBC)
         {
             if (i == NZ-1)
             {
@@ -297,13 +302,13 @@ void PoissonSolver::run_solver(std::string output_file)
             coeffmzhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i-1][j][k])/(DELTA_X*DELTA_X);
             v = -source->global_array[i][j][k];
             
-            if (phi->bc->upper_BC_type == constantBC)
+            if (phi->bc.upper_BC_type == constantBC)
             {
-                v += coeffmzhalf*phi->bc->upper_BC_val;
+                v += coeffmzhalf*phi->bc.upper_BC_val;
             }
             else
             {
-                v += 2.*DELTA_X*coeffmzhalf*phi->bc->upper_BC_val;
+                v += 2.*DELTA_X*coeffmzhalf*phi->bc.upper_BC_val;
             }
         }
         // Bottom side
@@ -312,13 +317,13 @@ void PoissonSolver::run_solver(std::string output_file)
             coeffpzhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i+1][j][k]);
             v = -source->global_array[i][j][k];
             
-            if (phi->bc->lower_BC_type == constantBC)
+            if (phi->bc.lower_BC_type == constantBC)
             {
-                v += coeffpzhalf*phi->bc->lower_BC_val;
+                v += coeffpzhalf*phi->bc.lower_BC_val;
             }
             else
             {
-                v += 2.*DELTA_X*coeffpzhalf*phi->bc->lower_BC_val;
+                v += 2.*DELTA_X*coeffpzhalf*phi->bc.lower_BC_val;
             }
         }
         // Center points

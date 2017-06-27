@@ -1,10 +1,17 @@
 #include "nonlocal_field.hpp"
 
 // constructor
-NonLocalField::NonLocalField(DM *da, BC *bc): Field(da), bc(bc)
+NonLocalField::NonLocalField(DM *da, BC_type lower_BC_type, double lower_BC_val, \
+                        BC_type upper_BC_type, double upper_BC_val): Field(da)
 {
     DMCreateLocalVector(*da, &local_vec);
     DMDAVecGetArray(*da, local_vec, &local_array);
+    
+    // Initialize boundary conditions
+    bc.lower_BC_type = lower_BC_type;
+    bc.lower_BC_val = lower_BC_val;
+    bc.upper_BC_type = upper_BC_type;
+    bc.upper_BC_val = upper_BC_val;
 }
 
 // destructor
@@ -28,13 +35,13 @@ void NonLocalField::send_global_to_local()
     if (zs == 0)
     {
         // derivative BC
-        if (bc->upper_BC_type == derivativeBC)
+        if (bc.upper_BC_type == derivativeBC)
         {
             for (j = ys; j < ys+ym; j++)
             {
                 for (k = xs; k < xs+xm; k++)
                 {
-                    local_array[-1][j][k] = global_array[1][j][k] - 2.*bc->upper_BC_val;
+                    local_array[-1][j][k] = global_array[1][j][k] - 2.*bc.upper_BC_val;
                 }
             }
         }
@@ -44,7 +51,7 @@ void NonLocalField::send_global_to_local()
             {
                 for (k = xs; k < xs+xm; k++)
                 {
-                    local_array[-1][j][k] = bc->upper_BC_val;
+                    local_array[-1][j][k] = bc.upper_BC_val;
                 }
             }
         }
@@ -52,13 +59,13 @@ void NonLocalField::send_global_to_local()
     if (zs + zm == nz)
     {
         // derivative BC
-        if (bc->lower_BC_type == derivativeBC)
+        if (bc.lower_BC_type == derivativeBC)
         {
             for (j = ys; j < ys+ym; j++)
             {
                 for (k = xs; k < xs+xm; k++)
                 {
-                    local_array[nz][j][k] = global_array[nz-2][j][k] + 2.*bc->lower_BC_val;
+                    local_array[nz][j][k] = global_array[nz-2][j][k] + 2.*bc.lower_BC_val;
                 }
             }
         }
@@ -68,7 +75,7 @@ void NonLocalField::send_global_to_local()
             {
                 for (k = xs; k < xs+xm; k++)
                 {
-                    local_array[nz][j][k] = bc->lower_BC_val;
+                    local_array[nz][j][k] = bc.lower_BC_val;
                 }
             }
         }

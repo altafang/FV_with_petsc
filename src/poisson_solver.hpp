@@ -11,6 +11,7 @@ class PoissonSolver
     public:    
         PoissonSolver(std::string input_file="input.txt");
         ~PoissonSolver();
+        void read_input(std::string input_file);
         void run_solver(std::string output_file="phi.h5");
         
         DM da;
@@ -23,7 +24,7 @@ class PoissonSolver
         int NX, NY, NZ;
         double DELTA_X;
         double PHI_UPPER, PHI_LOWER;
-        std::string x_BC_type, y_BC_type;
+        std::string X_BC_TYPE, Y_BC_TYPE;
 };
 
 #endif
