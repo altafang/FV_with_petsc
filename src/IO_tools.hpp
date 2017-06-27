@@ -35,6 +35,6 @@ void unpack(std::map<std::string, std::string> hash, std::string name, float & p
 
 void unpack(std::map<std::string, int> name_index, std::string name, int &index);
 
-void readParameters(std::map<std::string, std::string> &params);
+void read_parameters(std::map<std::string, std::string> &params, std::string input_file="input.txt");
 
 #endif

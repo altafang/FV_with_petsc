@@ -68,7 +68,7 @@ void unpack(std::map<std::string, int> name_index, std::string name, int &index)
     }
 }
 
-void readParameters(std::map<std::string, std::string> &params)
+void read_parameters(std::map<std::string, std::string> &params, std::string input_file)
 {
 
     // This function parses the input file.
@@ -76,7 +76,7 @@ void readParameters(std::map<std::string, std::string> &params)
     // All key-value are stored as string in params for use later.
     // Comment lines begin with "#"
     
-    std::ifstream input("input.txt");
+    std::ifstream input(input_file);
     std::string line;
     
     while (std::getline(input, line))
