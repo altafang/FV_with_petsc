@@ -15,9 +15,9 @@ class PoissonSolver
         void run_solver(std::string output_file="phi.h5");
         
         DM da;
-        NonLocalField *phi; // The field we are solving for
-        NonLocalField *sigma;
-        Field *source;
+        NonLocalField<double***> *phi; // The field we are solving for
+        NonLocalField<double***> *sigma;
+        Field<double***> *source;
         
     private:
         LinearSys *linear_sys;

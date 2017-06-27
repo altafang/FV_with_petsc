@@ -1,8 +1,9 @@
 #include "nonlocal_field.hpp"
 
 // constructor
-NonLocalField::NonLocalField(DM *da, BC_type lower_BC_type, double lower_BC_val, \
-                        BC_type upper_BC_type, double upper_BC_val): Field(da)
+template <typename T>
+NonLocalField<T>::NonLocalField(DM *da, BC_type lower_BC_type, double lower_BC_val, \
+                        BC_type upper_BC_type, double upper_BC_val) : Field<T>(da)
 {
     DMCreateLocalVector(*da, &local_vec);
     DMDAVecGetArray(*da, local_vec, &local_array);
@@ -15,23 +16,36 @@ NonLocalField::NonLocalField(DM *da, BC_type lower_BC_type, double lower_BC_val,
 }
 
 // destructor
-NonLocalField::~NonLocalField()
+template <typename T>
+NonLocalField<T>::~NonLocalField()
 {
-    DMDAVecRestoreArray(*da, local_vec, &local_array);
+    DMDAVecRestoreArray(*(this->da), local_vec, &local_array);
     VecDestroy(&local_vec);
 }
 
-void NonLocalField::send_global_to_local()
+// Specialization of template to specific types
+// 3D fields
+template NonLocalField<double***>::NonLocalField(DM *da, BC_type lower_BC_type, double lower_BC_val, \
+                        BC_type upper_BC_type, double upper_BC_val);
+template NonLocalField<double***>::~NonLocalField();
+// 2D fields
+template NonLocalField<double**>::NonLocalField(DM *da, BC_type lower_BC_type, double lower_BC_val, \
+                        BC_type upper_BC_type, double upper_BC_val);
+template NonLocalField<double**>::~NonLocalField();
+
+// Implementation specific to 3D
+template<>
+void NonLocalField<double***>::send_global_to_local()
 {
-    DMGlobalToLocalBegin(*da, global_vec, INSERT_VALUES, local_vec);
-    DMGlobalToLocalEnd(*da, global_vec, INSERT_VALUES, local_vec);
+    DMGlobalToLocalBegin(*(this->da), global_vec, INSERT_VALUES, local_vec);
+    DMGlobalToLocalEnd(*(this->da), global_vec, INSERT_VALUES, local_vec);
     
     // Fill in boundary conditions
     int xs, ys, zs, xm, ym, zm, j, k;
     int nx, ny, nz;
     DMBoundaryType x_BC_type, y_BC_type;
-    DMDAGetInfo(*da, NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, &x_BC_type, &y_BC_type, NULL, NULL);
-    DMDAGetCorners(*da, &xs, &ys, &zs, &xm, &ym, &zm);
+    DMDAGetInfo(*(this->da), NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, &x_BC_type, &y_BC_type, NULL, NULL);
+    DMDAGetCorners(*(this->da), &xs, &ys, &zs, &xm, &ym, &zm);
     if (zs == 0)
     {
         // derivative BC
@@ -135,3 +149,9 @@ void NonLocalField::send_global_to_local()
     
     return;
 }
+
+// Implementation specific to 2D
+// TODO
+
+
+

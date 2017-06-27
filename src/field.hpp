@@ -12,6 +12,7 @@
 #include <iomanip>
 #include "IO_tools.hpp"
 
+template <typename T>
 class Field
 {
     public:
@@ -21,7 +22,7 @@ class Field
         void read_from_file(std::string filename);
     
         Vec global_vec;
-        double ***global_array;
+        T global_array; // T is double*** for 3D and double** for 2D
         DM *da; // Pointer to DM
 };
 

@@ -20,7 +20,8 @@ struct BC
     double upper_BC_val;
 };
 
-class NonLocalField: public Field // inherits from Field
+template <typename T>
+class NonLocalField: public Field<T> // inherits from Field
 {
     public:
         NonLocalField(DM *da, BC_type lower_BC_type, double lower_BC_val, \
@@ -29,7 +30,7 @@ class NonLocalField: public Field // inherits from Field
         void send_global_to_local();
     
         Vec local_vec;
-        double ***local_array;
+        T local_array; // Either 2D or 3D
     
         BC bc;
 };

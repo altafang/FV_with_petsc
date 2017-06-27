@@ -54,18 +54,18 @@ PoissonSolver::PoissonSolver(std::string input_file)
                  NX, NY, NZ, 1, 1, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, PETSC_NULL, &da);
     
     // Initialize with z boundary conditions
-    phi = new NonLocalField(&da, constantBC, PHI_LOWER, constantBC, PHI_UPPER);
+    phi = new NonLocalField<double***>(&da, constantBC, PHI_LOWER, constantBC, PHI_UPPER);
     PetscObjectSetName((PetscObject)phi->global_vec, "phi");
     
     // Zero derivative boundary conditions in z
-    sigma = new NonLocalField(&da, derivativeBC, 0., derivativeBC, 0.);
+    sigma = new NonLocalField<double***>(&da, derivativeBC, 0., derivativeBC, 0.);
     PetscObjectSetName((PetscObject)sigma->global_vec, "sigma");
     
     // Read sigma in from hdf5 file
     sigma->read_from_file("sigma.h5");
     sigma->send_global_to_local();
     
-    source = new Field(&da);
+    source = new Field<double***>(&da);
     PetscObjectSetName((PetscObject)source->global_vec, "source");
 
     // Read source term in from hdf5 file
