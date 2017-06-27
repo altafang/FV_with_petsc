@@ -18,8 +18,8 @@ class Field
     public:
         Field(DM *da);
         ~Field();
-        void write_to_file(std::string filename);
-        void read_from_file(std::string filename);
+        void write_to_file(const std::string &filename);
+        void read_from_file(const std::string &filename);
     
         Vec global_vec;
         T global_array; // T is double*** for 3D and double** for 2D

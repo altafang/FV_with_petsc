@@ -20,7 +20,7 @@ Field<T>::~Field()
 
 // Write field to an hdf5 file
 template <typename T>
-void Field<T>::write_to_file(std::string filename)
+void Field<T>::write_to_file(const std::string &filename)
 {
     PetscViewer viewer;
     PetscViewerHDF5Open(PETSC_COMM_WORLD, filename.c_str(), FILE_MODE_WRITE, &viewer);
@@ -30,7 +30,7 @@ void Field<T>::write_to_file(std::string filename)
 
 // Read field from an hdf5 file
 template <typename T>
-void Field<T>::read_from_file(std::string filename)
+void Field<T>::read_from_file(const std::string &filename)
 {
     PetscViewer viewer;
     PetscViewerHDF5Open(PETSC_COMM_WORLD, filename.c_str(), FILE_MODE_READ, &viewer);
@@ -42,11 +42,11 @@ void Field<T>::read_from_file(std::string filename)
 // 3D fields
 template Field<double***>::Field(DM *da);
 template Field<double***>::~Field();
-template void Field<double***>::write_to_file(std::string filename);
-template void Field<double***>::read_from_file(std::string filename);
+template void Field<double***>::write_to_file(const std::string &filename);
+template void Field<double***>::read_from_file(const std::string &filename);
 // 2D fields
 template Field<double**>::Field(DM *da);
 template Field<double**>::~Field();
-template void Field<double**>::write_to_file(std::string filename);
-template void Field<double**>::read_from_file(std::string filename);
+template void Field<double**>::write_to_file(const std::string &filename);
+template void Field<double**>::read_from_file(const std::string &filename);
 

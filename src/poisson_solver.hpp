@@ -11,7 +11,7 @@ class PoissonSolver
     public:    
         PoissonSolver(std::string input_file="input.txt");
         ~PoissonSolver();
-        void read_input(std::string input_file);
+        void read_input(const std::string &input_file);
         void run_solver(std::string output_file="phi.h5");
         
         DM da;

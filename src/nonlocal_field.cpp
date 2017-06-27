@@ -43,7 +43,7 @@ void NonLocalField<double***>::send_global_to_local()
     DMGlobalToLocalEnd(*(this->da), global_vec, INSERT_VALUES, local_vec);
     
     // Fill in boundary conditions
-    int xs, ys, zs, xm, ym, zm, j, k;
+    int xs, ys, zs, xm, ym, zm;
     int nx, ny, nz;
     DMBoundaryType x_BC_type, y_BC_type;
     DMDAGetInfo(*(this->da), NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, &x_BC_type, &y_BC_type, NULL, NULL);
@@ -53,9 +53,9 @@ void NonLocalField<double***>::send_global_to_local()
         // derivative BC
         if (bc.upper_BC_type == derivativeBC)
         {
-            for (j = ys; j < ys+ym; j++)
+            for (int j = ys; j < ys+ym; ++j)
             {
-                for (k = xs; k < xs+xm; k++)
+                for (int k = xs; k < xs+xm; ++k)
                 {
                     local_array[-1][j][k] = global_array[1][j][k] - 2.*bc.upper_BC_val;
                 }
@@ -63,9 +63,9 @@ void NonLocalField<double***>::send_global_to_local()
         }
         else // const BC
         {
-            for (j = ys; j < ys+ym; j++)
+            for (int j = ys; j < ys+ym; ++j)
             {
-                for (k = xs; k < xs+xm; k++)
+                for (int k = xs; k < xs+xm; ++k)
                 {
                     local_array[-1][j][k] = bc.upper_BC_val;
                 }
@@ -77,9 +77,9 @@ void NonLocalField<double***>::send_global_to_local()
         // derivative BC
         if (bc.lower_BC_type == derivativeBC)
         {
-            for (j = ys; j < ys+ym; j++)
+            for (int j = ys; j < ys+ym; ++j)
             {
-                for (k = xs; k < xs+xm; k++)
+                for (int k = xs; k < xs+xm; ++k)
                 {
                     local_array[nz][j][k] = global_array[nz-2][j][k] + 2.*bc.lower_BC_val;
                 }
@@ -87,9 +87,9 @@ void NonLocalField<double***>::send_global_to_local()
         }
         else // const BC
         {
-            for (j = ys; j < ys+ym; j++)
+            for (int j = ys; j < ys+ym; ++j)
             {
-                for (k = xs; k < xs+xm; k++)
+                for (int k = xs; k < xs+xm; ++k)
                 {
                     local_array[nz][j][k] = bc.lower_BC_val;
                 }
@@ -103,9 +103,9 @@ void NonLocalField<double***>::send_global_to_local()
         // DM_BOUNDARY_MIRROR is not yet implemented in 3D so have to manually fill these cells
         if (ys == 0)
         {
-            for (j = zs; j < zs+zm; j++)
+            for (int j = zs; j < zs+zm; ++j)
             {
-                for (k = xs; k < xs+xm; k++)
+                for (int k = xs; k < xs+xm; ++k)
                 {
                     local_array[j][-1][k] = global_array[j][1][k];
                 }
@@ -113,9 +113,9 @@ void NonLocalField<double***>::send_global_to_local()
         }
         if (ys + ym == ny)
         {
-            for (j = zs; j < zs+zm; j++)
+            for (int j = zs; j < zs+zm; ++j)
             {
-                for (k = xs; k < xs+xm; k++)
+                for (int k = xs; k < xs+xm; ++k)
                 {
                     local_array[j][ny][k] = global_array[j][ny-2][k];
                 }
@@ -129,9 +129,9 @@ void NonLocalField<double***>::send_global_to_local()
         // DM_BOUNDARY_MIRROR is not yet implemented in 3D so have to manually fill these cells
         if (xs == 0)
         {
-            for (j = zs; j < zs+zm; j++)
+            for (int j = zs; j < zs+zm; ++j)
             {
-                for (k = ys; k < ys+ym; k++)
+                for (int k = ys; k < ys+ym; ++k)
                 {
                     local_array[j][k][-1] = global_array[j][k][1];
                 }
@@ -139,9 +139,9 @@ void NonLocalField<double***>::send_global_to_local()
         }
         if (xs + xm == nx)
         {
-            for (j = zs; j < zs+zm; j++)
+            for (int j = zs; j < zs+zm; ++j)
             {
-                for (k = ys; k < ys+ym; k++)
+                for (int k = ys; k < ys+ym; ++k)
                 {
                     local_array[j][k][nx] = global_array[j][k][nx-2];
                 }
@@ -160,8 +160,7 @@ void NonLocalField<double**>::send_global_to_local()
     DMGlobalToLocalEnd(*(this->da), global_vec, INSERT_VALUES, local_vec);
     
     /* Fill in upper and lower boundary conditions */
-    int xs, ys, xm, ym, j;
-    int ny;
+    int xs, ys, xm, ym, ny;
     DMDAGetInfo(*(this->da), NULL, NULL, &ny, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
     DMDAGetCorners(*(this->da), &xs, &ys, NULL, &xm, &ym, NULL);
     if (ys == 0)
@@ -169,14 +168,14 @@ void NonLocalField<double**>::send_global_to_local()
         // derivative BC
         if (bc.upper_BC_type == 0)
         {
-            for (j = xs; j < xs+xm; j++)
+            for (int j = xs; j < xs+xm; ++j)
             {
                 local_array[-1][j] = global_array[1][j] - 2.*bc.upper_BC_val;
             }
         }
         else // const BC
         {
-            for (j = xs; j < xs+xm; j++)
+            for (int j = xs; j < xs+xm; ++j)
             {
                 local_array[-1][j] = bc.upper_BC_val;
             }
@@ -187,14 +186,14 @@ void NonLocalField<double**>::send_global_to_local()
         // derivative BC
         if (bc.lower_BC_type == 0)
         {
-            for (j = xs; j < xs+xm; j++)
+            for (int j = xs; j < xs+xm; ++j)
             {
                 local_array[ny][j] = global_array[ny-2][j] + 2.*bc.lower_BC_val;
             }
         }
         else // const BC
         {
-            for (j = xs; j < xs+xm; j++)
+            for (int j = xs; j < xs+xm; ++j)
             {
                 local_array[ny][j] = bc.lower_BC_val;
             }

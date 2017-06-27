@@ -2,7 +2,7 @@
 #include <unordered_map>
 
 // Helper function: convert user-input lateral BC type strings to appropriate actual BC options 
-DMBoundaryType& get_BC_type(std::string& type_name, bool warn=false)
+DMBoundaryType& get_BC_type(const std::string &type_name, bool warn=false)
 {
     std::unordered_map<std::string, DMBoundaryType> lateral_BCs = {{"zeroflux", DM_BOUNDARY_GHOSTED}, {"periodic", DM_BOUNDARY_PERIODIC}};
 
@@ -20,7 +20,7 @@ DMBoundaryType& get_BC_type(std::string& type_name, bool warn=false)
     }
 }
 
-void PoissonSolver::read_input(std::string input_file)
+void PoissonSolver::read_input(const std::string &input_file)
 {
     std::map<std::string, std::string> params;
     read_parameters(params, input_file);
@@ -72,15 +72,15 @@ PoissonSolver::PoissonSolver(std::string input_file)
     source->read_from_file("source.h5");
 
     // Get coords of where this thread is in the global domain.
-    int xs, ys, zs, xm, ym, zm, i, j, k;
+    int xs, ys, zs, xm, ym, zm;
     DMDAGetCorners(da, &xs, &ys, &zs, &xm, &ym, &zm);
 
     // Fill in initial values.
-    for (i = zs; i < zs+zm; i++)
+    for (int i = zs; i < zs+zm; ++i)
     {
-        for (j = ys; j < ys+ym; j++)
+        for (int j = ys; j < ys+ym; ++j)
         {
-            for (k = xs; k < xs+xm; k++)
+            for (int k = xs; k < xs+xm; ++k)
             {
                 phi->global_array[i][j][k] = 0.;
             }
@@ -88,7 +88,7 @@ PoissonSolver::PoissonSolver(std::string input_file)
     }
     
     // Make a LinearSys
-    linear_sys = new LinearSys(&da);
+    linear_sys = new LinearSys(NX*NY*NZ, 7); // For 3D
 }
 
 // Destructor
@@ -109,7 +109,7 @@ void PoissonSolver::run_solver(std::string output_file)
     sigma->send_global_to_local();
 
     // Set up A and b
-    int i,j,k,Ii,J,Istart,Iend;
+    int i,j,k,J,Istart,Iend;
     double v;
     
     // Currently, all PETSc parallel matrix formats are partitioned by
@@ -130,7 +130,7 @@ void PoissonSolver::run_solver(std::string output_file)
     // would first do all variables for y = h, then y = 2h etc.
     
     double coeffpxhalf, coeffpyhalf, coeffpzhalf, coeffmxhalf, coeffmyhalf, coeffmzhalf;
-    for (Ii=Istart; Ii<Iend; Ii++)
+    for (int Ii = Istart; Ii < Iend; ++Ii)
     {
         i = Ii/(NX*NY); j = (Ii - i*(NX*NY))/NX; k = Ii - j*NY - i*NX*NY;
         
@@ -213,10 +213,6 @@ void PoissonSolver::run_solver(std::string output_file)
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
             }
         }
-        else
-        {
-            PetscPrintf(PETSC_COMM_WORLD, "lateral BC problem!\n");
-        }
         
         // Periodic boundary conditions in x
         if (get_BC_type(X_BC_TYPE) == DM_BOUNDARY_PERIODIC)
@@ -249,10 +245,6 @@ void PoissonSolver::run_solver(std::string output_file)
                 v = -coeffmxhalf-coeffpxhalf;
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
             }
-        }
-        else
-        {
-            PetscPrintf(PETSC_COMM_WORLD, "lateral BC problem!\n");
         }
         
         // Derivative boundary conditions in z
@@ -292,7 +284,7 @@ void PoissonSolver::run_solver(std::string output_file)
     
     // Set right-hand-side vector.
     VecGetOwnershipRange(linear_sys->b,&Istart,&Iend);
-    for (Ii=Istart; Ii<Iend; Ii++)
+    for (int Ii = Istart; Ii < Iend; ++Ii)
     {
         i = Ii/(NX*NY); j = (Ii - i*(NX*NY))/NX; k = Ii - j*NX - i*NX*NY;
         

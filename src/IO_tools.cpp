@@ -1,3 +1,8 @@
+// Most of this was copy-pasted from Ryan Davis's PADI software:
+// https://github.com/rsdavis/ParallelDiffuseInterface-PADI
+// It provides utilities for reading input parameters from a text file.
+// The logging code has been removed.
+
 #include "IO_tools.hpp"
 
 // utility function for appending numbers to hdf5 filenames, if there is a series

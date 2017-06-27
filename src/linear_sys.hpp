@@ -16,7 +16,7 @@ struct LinearSys
     PC pc;
     
     // Constructor and destructor
-    LinearSys(DM *da);
+    LinearSys(const int &total_N, const int &n_stencil_nonzero);
     ~LinearSys();
 };
 

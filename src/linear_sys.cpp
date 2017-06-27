@@ -4,17 +4,12 @@
 #include "linear_sys.hpp"
 
 // constructor
-LinearSys::LinearSys(DM *da)
+LinearSys::LinearSys(const int &total_N, const int &n_stencil_nonzero)
 {
-    int nx, ny, nz;
-    DMDAGetInfo(*da, NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL);
-    
-    int total_N = nx*ny*nz;
     MatCreate(PETSC_COMM_WORLD,&A);
     MatSetSizes(A,PETSC_DECIDE,PETSC_DECIDE,total_N,total_N);
     MatSetFromOptions(A);
     
-    int n_stencil_nonzero = 7; // For 3D
     MatMPIAIJSetPreallocation(A,n_stencil_nonzero,NULL,n_stencil_nonzero,NULL);
     MatSeqAIJSetPreallocation(A,n_stencil_nonzero,NULL);
     
