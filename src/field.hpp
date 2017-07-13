@@ -17,7 +17,7 @@ class Field
 {
     public:
         Field(DM *da);
-        ~Field();
+        virtual ~Field();
         void write_to_file(const std::string &filename);
         void read_from_file(const std::string &filename);
     
