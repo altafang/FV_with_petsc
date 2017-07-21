@@ -43,8 +43,9 @@ LinearSys::LinearSys(const int &total_N, const int &n_stencil_nonzero)
     KSPSetType(ksp, KSPGCR);
     
     // optional: tell solvers not to zero out x every time.
-    KSPSetInitialGuessNonzero(ksp, PETSC_TRUE);
-    PCSetInitialGuessNonzero(pc, PETSC_TRUE);
+    // In newer version of PETSc this seems to cause compilation errors
+    //KSPSetInitialGuessNonzero(ksp, PETSC_TRUE);
+    //PCSetInitialGuessNonzero(pc, PETSC_TRUE);
     
     // Allow options to be set from the command line.
     KSPSetFromOptions(ksp);

@@ -25,7 +25,13 @@ def validate_results(path = "", plot=True):
     theoretical_1D = numpy.linspace(1, 0, NZ+2)[1:-1]
     theoretical_3D = numpy.broadcast_to(theoretical_1D.reshape(NZ,1,1), (NZ, NY, NX))
     # Assert if error is too large
-    numpy.testing.assert_allclose(phi, theoretical_3D, rtol=1.e-3)
+    try:
+        rtol = 1.e-3
+        numpy.testing.assert_allclose(phi, theoretical_3D, rtol=rtol)
+        # If no exception raised so far, then it passed
+        print "Ok: solution is within %f of theoretical." % rtol
+    except Exception as e:
+        print e
 
     if plot:
         pyplot.imshow(phi[:,:,NX/2])
@@ -39,5 +45,5 @@ def validate_results(path = "", plot=True):
         pyplot.show()
 
 if __name__ == '__main__':
-    validate_results()
+    validate_results(plot=False)
 

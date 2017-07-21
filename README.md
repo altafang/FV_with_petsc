@@ -42,7 +42,7 @@ where X_BC_TYPE and Y_BC_TYPE are either periodic or zeroflux
 Outputs:
 - phi.h5 -- hdf5 file with the solved field
 
-For example(s), see the `test/` directory.
+For example(s), see the `test/` directory. In the `test/` directory, run `python make_inputs.py` and then run `mpiexec -np 2 ../bin/solve_poisson`. 
 
 ## Installing PETSc
 
@@ -52,7 +52,7 @@ Here I give rough instructions that worked for me, but it may.
 1. First download the latest `.tar.gz` release from [here](http://www.mcs.anl.gov/petsc/download/index.html). 
 2. Untar it by executing the command `tar -xvf <tarball filename here>`. 
 3. Make or identify a directory where you want the installation to go, for example `/home/<username>/software/`.
-4. Enter the untarred directory and execute `./configure ` with the options described below.
+4. Enter the untarred directory and execute `./configure ` with the options described below. Beforehand, you may need to execute `export PETSC_DIR=$PWD`. To finish installing, follow the instructions provided by the output of `./configure`.
 5. Add to your `~/.bash_profile` a line that says something like `export PETSC_DIR=/home/<username>/software/petsc-3.6.3/` where 3.6.3 is replaced with your version number.
 
 If you are on a shared cluster that already has some software for scientific computing installed, try the following `./configure ` options:
