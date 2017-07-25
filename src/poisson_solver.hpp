@@ -9,7 +9,8 @@
 class PoissonSolver
 {
     public:    
-        PoissonSolver(std::string input_file="input.txt");
+        PoissonSolver(std::string input_file="input.txt", \
+                std::string sigma_file="sigma.h5", std::string source_file="source.h5");
         ~PoissonSolver();
         void read_input(const std::string &input_file);
         void run_solver(std::string output_file="phi.h5");

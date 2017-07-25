@@ -39,7 +39,7 @@ void PoissonSolver::read_input(const std::string &input_file)
 }
 
 // Constructor
-PoissonSolver::PoissonSolver(std::string input_file)
+PoissonSolver::PoissonSolver(std::string input_file, std::string sigma_file, std::string source_file)
 {
     // Read input parameters from text file called "input.txt"
     // and unpack the input parameters.
@@ -62,14 +62,14 @@ PoissonSolver::PoissonSolver(std::string input_file)
     PetscObjectSetName((PetscObject)sigma->global_vec, "sigma");
     
     // Read sigma in from hdf5 file
-    sigma->read_from_file("sigma.h5");
+    sigma->read_from_file(sigma_file);
     sigma->send_global_to_local();
     
     source = new Field<double***>(&da);
     PetscObjectSetName((PetscObject)source->global_vec, "source");
 
     // Read source term in from hdf5 file
-    source->read_from_file("source.h5");
+    source->read_from_file(source_file);
 
     // Get coords of where this thread is in the global domain.
     int xs, ys, zs, xm, ym, zm;
