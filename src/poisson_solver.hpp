@@ -24,8 +24,7 @@ class PoissonSolver
         LinearSys *linear_sys;
         int NX, NY, NZ;
         double DELTA_X;
-        double PHI_UPPER, PHI_LOWER;
-        std::string X_BC_TYPE, Y_BC_TYPE;
+        BC X_BC, Y_BC, Z_BC; 
 };
 
 #endif

@@ -4,10 +4,9 @@ NZ = 60
 
 DELTA_X = 1.
 
-PHI_UPPER = 1.
-PHI_LOWER = 0.
+X_BC = periodic
+Y_BC = periodic
+Z_BC = constant,1,constant,0
 
-X_BC_TYPE = periodic
-Y_BC_TYPE = periodic
 
 

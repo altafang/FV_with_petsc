@@ -9,6 +9,7 @@
 #include <iostream>
 #include <map>
 #include <fstream>
+#include <sstream>
 #include <string>
 #include <iomanip>
 #include <ctime>
@@ -17,6 +18,8 @@
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>
+
+#include "bc.hpp"
 
 // utility function for appending numbers to hdf5 filenames, if there is a series
 std::string number_filename(std::string base_filename, int counter);
@@ -30,8 +33,8 @@ void unpack(std::map<std::string, std::string> hash, std::string name, double & 
 template <> // explicit specialization for T = int
 void unpack(std::map<std::string, std::string> hash, std::string name, int & parameter);
 
-template <> // explicit specialization for T = float
-void unpack(std::map<std::string, std::string> hash, std::string name, float & parameter);
+template <> // explicit specialization for T = BC
+void unpack(std::map<std::string, std::string> hash, std::string name, BC & parameter);
 
 void unpack(std::map<std::string, int> name_index, std::string name, int &index);
 

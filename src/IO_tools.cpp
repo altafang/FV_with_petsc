@@ -48,8 +48,8 @@ void unpack(std::map<std::string, std::string> hash, std::string name, int & par
     }
 }
 
-template <> // explicit specialization for T = string
-void unpack(std::map<std::string, std::string> hash, std::string name, std::string & parameter)
+template <> // explicit specialization for T = BC
+void unpack(std::map<std::string, std::string> hash, std::string name, BC & parameter)
 {
     std::map<std::string, std::string>::iterator it;
     it = hash.find(name);
@@ -57,7 +57,34 @@ void unpack(std::map<std::string, std::string> hash, std::string name, std::stri
         PetscPrintf(PETSC_COMM_WORLD, "Parameter %s not found\n", name.c_str());
         MPI_Abort(PETSC_COMM_WORLD, 0);
     } else { // parameter found
-        parameter = it->second;
+        // Split line using commas
+        std::istringstream ss(it->second);
+        std::string token;
+        int counter = 0;
+        while (std::getline(ss, token, ','))
+        {
+            if (counter == 0)
+            {
+                parameter.lower_BC_type = token;
+            }
+            else if (counter == 1)
+            {
+                parameter.lower_BC_val = std::stod(token);
+            }
+            else if (counter == 2)
+            {
+                parameter.upper_BC_type = token;
+            }
+            else if (counter == 3)
+            {
+                parameter.upper_BC_val = std::stod(token);
+            }
+            else
+            {
+                PetscPrintf(PETSC_COMM_WORLD, "Warning: boundary conditions not in correct format\n");
+            }
+            counter++;
+        }
     }
 }
 
