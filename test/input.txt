@@ -4,9 +4,9 @@ NZ = 60
 
 DELTA_X = 1.
 
-X_BC = periodic
+X_BC = constant,1,constant,0
 Y_BC = periodic
-Z_BC = constant,1,constant,0
+Z_BC = periodic
 
 
 

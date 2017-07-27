@@ -183,14 +183,13 @@ void PoissonSolver::run_solver(std::string output_file)
         // Periodic boundary conditions in z
         if (Z_BC.lower_BC_type == "periodic")
         {
-            // XXX CHECK IF THIS WORKS?!?!?
-            if (k == 0)
+            if (i == 0)
             {
                 J = Ii + NX*NY*NZ - NX*NY;
                 v = -coeffmzhalf;
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
             }
-            if (k == NZ - 1)
+            if (i == NZ - 1)
             {
                 J = Ii - NX*NY*NZ + NX*NY;
                 v = -coeffpzhalf;

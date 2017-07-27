@@ -23,7 +23,7 @@ def validate_results(path = "", plot=True):
 
     # Check that it is linear
     theoretical_1D = numpy.linspace(1, 0, NZ+2)[1:-1]
-    theoretical_3D = numpy.broadcast_to(theoretical_1D.reshape(NZ,1,1), (NZ, NY, NX))
+    theoretical_3D = numpy.broadcast_to(theoretical_1D.reshape(1,1,NX), (NZ, NY, NX))
     # Assert if error is too large
     try:
         rtol = 1.e-3
