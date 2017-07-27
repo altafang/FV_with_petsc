@@ -43,7 +43,7 @@ void NonLocalField<double***>::send_global_to_local()
     if (zs == 0)
     {
         // derivative BC
-        if (z_bc->lower_BC_type == "derivative")
+        if (z_bc->lower_BC_type == derivativeBC)
         {
             for (int j = ys; j < ys+ym; ++j)
             {
@@ -53,7 +53,7 @@ void NonLocalField<double***>::send_global_to_local()
                 }
             }
         }
-        else if (z_bc->lower_BC_type == "constant") // const BC
+        else if (z_bc->lower_BC_type == constantBC) // const BC
         {
             for (int j = ys; j < ys+ym; ++j)
             {
@@ -67,7 +67,7 @@ void NonLocalField<double***>::send_global_to_local()
     if (zs + zm == nz)
     {
         // derivative BC
-        if (z_bc->upper_BC_type == "derivative")
+        if (z_bc->upper_BC_type == derivativeBC)
         {
             for (int j = ys; j < ys+ym; ++j)
             {
@@ -77,7 +77,7 @@ void NonLocalField<double***>::send_global_to_local()
                 }
             }
         }
-        else if (z_bc->upper_BC_type == "constant") // const BC
+        else if (z_bc->upper_BC_type == constantBC) // const BC
         {
             for (int j = ys; j < ys+ym; ++j)
             {
@@ -91,7 +91,7 @@ void NonLocalField<double***>::send_global_to_local()
     
     if (ys == 0)
     {
-        if (y_bc->lower_BC_type == "derivative")
+        if (y_bc->lower_BC_type == derivativeBC)
         {
             for (int j = zs; j < zs+zm; ++j)
             {
@@ -101,7 +101,7 @@ void NonLocalField<double***>::send_global_to_local()
                 }
             }
         }
-        else if (y_bc->lower_BC_type == "constant")
+        else if (y_bc->lower_BC_type == constantBC)
         {
             for (int j = zs; j < zs+zm; ++j)
             {
@@ -114,7 +114,7 @@ void NonLocalField<double***>::send_global_to_local()
     }
     if (ys + ym == ny)
     {
-        if (y_bc->upper_BC_type == "derivative")
+        if (y_bc->upper_BC_type == derivativeBC)
         {
             for (int j = zs; j < zs+zm; ++j)
             {
@@ -124,7 +124,7 @@ void NonLocalField<double***>::send_global_to_local()
                 }
             }
         }
-        else if (y_bc->upper_BC_type == "constant")
+        else if (y_bc->upper_BC_type == constantBC)
         {
             for (int j = zs; j < zs+zm; ++j)
             {
@@ -138,7 +138,7 @@ void NonLocalField<double***>::send_global_to_local()
     
     if (xs == 0)
     {
-        if (x_bc->lower_BC_type == "derivative")
+        if (x_bc->lower_BC_type == derivativeBC)
         {
             for (int j = zs; j < zs+zm; ++j)
             {
@@ -148,7 +148,7 @@ void NonLocalField<double***>::send_global_to_local()
                 }
             }
         }
-        else if (x_bc->lower_BC_type == "constant")
+        else if (x_bc->lower_BC_type == constantBC)
         {
             for (int j = zs; j < zs+zm; ++j)
             {
@@ -161,7 +161,7 @@ void NonLocalField<double***>::send_global_to_local()
     }
     if (xs + xm == nx)
     {
-        if (x_bc->upper_BC_type == "derivative")
+        if (x_bc->upper_BC_type == derivativeBC)
         {
             for (int j = zs; j < zs+zm; ++j)
             {
@@ -171,7 +171,7 @@ void NonLocalField<double***>::send_global_to_local()
                 }
             }
         }
-        else if (x_bc->upper_BC_type == "constant")
+        else if (x_bc->upper_BC_type == constantBC)
         {
             for (int j = zs; j < zs+zm; ++j)
             {
@@ -200,14 +200,14 @@ void NonLocalField<double**>::send_global_to_local()
         
     if (ys == 0)
     {
-        if (y_bc->lower_BC_type == "derivative")
+        if (y_bc->lower_BC_type == derivativeBC)
         {
             for (int k = xs; k < xs+xm; ++k)
             {
                 local_array[-1][k] = global_array[1][k] - 2.*DELTA_X*y_bc->lower_BC_val;
             }
         }
-        else if (y_bc->lower_BC_type == "constant")
+        else if (y_bc->lower_BC_type == constantBC)
         {
             for (int k = xs; k < xs+xm; ++k)
             {
@@ -217,14 +217,14 @@ void NonLocalField<double**>::send_global_to_local()
     }
     if (ys + ym == ny)
     {
-        if (y_bc->upper_BC_type == "derivative")
+        if (y_bc->upper_BC_type == derivativeBC)
         {
             for (int k = xs; k < xs+xm; ++k)
             {
                 local_array[ny][k] = global_array[ny-2][k] + 2.*DELTA_X*y_bc->upper_BC_val;
             }
         }
-        else if (y_bc->upper_BC_type == "constant")
+        else if (y_bc->upper_BC_type == constantBC)
         {
             for (int k = xs; k < xs+xm; ++k)
             {
@@ -235,14 +235,14 @@ void NonLocalField<double**>::send_global_to_local()
     
     if (xs == 0)
     {
-        if (x_bc->lower_BC_type == "derivative")
+        if (x_bc->lower_BC_type == derivativeBC)
         {
             for (int k = ys; k < ys+ym; ++k)
             {
                 local_array[k][-1] = global_array[k][1] - 2.*DELTA_X*x_bc->lower_BC_val;
             }
         }
-        else if (x_bc->lower_BC_type == "constant")
+        else if (x_bc->lower_BC_type == constantBC)
         {
             for (int k = ys; k < ys+ym; ++k)
             {
@@ -252,14 +252,14 @@ void NonLocalField<double**>::send_global_to_local()
     }
     if (xs + xm == nx)
     {
-        if (x_bc->upper_BC_type == "derivative")
+        if (x_bc->upper_BC_type == derivativeBC)
         {
             for (int k = ys; k < ys+ym; ++k)
             {
                 local_array[k][nx] = global_array[k][nx-2] + 2.*DELTA_X*x_bc->upper_BC_val;
             }
         }
-        else if (x_bc->upper_BC_type == "constant")
+        else if (x_bc->upper_BC_type == constantBC)
         {
             for (int k = ys; k < ys+ym; ++k)
             {

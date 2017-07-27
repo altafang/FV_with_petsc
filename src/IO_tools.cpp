@@ -48,6 +48,28 @@ void unpack(std::map<std::string, std::string> hash, std::string name, int & par
     }
 }
 
+BC_type convert_to_BCtype(std::string name)
+{
+    if (name == "periodic")
+    {
+        return periodicBC;
+    }
+    else if (name == "derivative")
+    {
+        return derivativeBC;
+    }
+    else if (name == "constant")
+    {
+        return constantBC;
+    }
+    else
+    {
+        // XXX need better error handling
+        PetscPrintf(PETSC_COMM_WORLD, "Warning: %s not valid boundary condition type; defaulting to derivative\n");
+        return derivativeBC;
+    }
+}
+
 template <> // explicit specialization for T = BC
 void unpack(std::map<std::string, std::string> hash, std::string name, BC & parameter)
 {
@@ -65,7 +87,7 @@ void unpack(std::map<std::string, std::string> hash, std::string name, BC & para
         {
             if (counter == 0)
             {
-                parameter.lower_BC_type = token;
+                parameter.lower_BC_type = convert_to_BCtype(token);
             }
             else if (counter == 1)
             {
@@ -73,7 +95,7 @@ void unpack(std::map<std::string, std::string> hash, std::string name, BC & para
             }
             else if (counter == 2)
             {
-                parameter.upper_BC_type = token;
+                parameter.upper_BC_type = convert_to_BCtype(token);
             }
             else if (counter == 3)
             {
@@ -81,7 +103,8 @@ void unpack(std::map<std::string, std::string> hash, std::string name, BC & para
             }
             else
             {
-                PetscPrintf(PETSC_COMM_WORLD, "Warning: boundary conditions not in correct format\n");
+                PetscPrintf(PETSC_COMM_WORLD, "Boundary condition format should be"
+                    "type,val,type,val\n");
             }
             counter++;
         }
