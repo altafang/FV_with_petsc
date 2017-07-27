@@ -6,9 +6,6 @@ The idea is to wrap the specific PETSc calls so that the user does not need to w
 For example, this package can be used to numerically calculate the effective conductivity of a material with an arbitrary microstructure.
 PETSc is an open-source toolkit for scientific computation.
 
-The domain is only decomposed along the 'z' direction, which is the direction of applied constant-value boundary conditions. 
-Lateral boundary conditions may be either zero-flux or periodic.
-
 The generalized Poisson equation solved here is:
 
 ```
@@ -34,8 +31,7 @@ mpiexec -np 2 ./solve_poisson
 ```
 
 Inputs:
-- input.txt -- text file that specifies NX, NY, NZ, DELTA_X, PHI_UPPER, PHI_LOWER, X_BC_TYPE, Y_BC_TYPE
-where X_BC_TYPE and Y_BC_TYPE are either periodic or zeroflux 
+- input.txt -- text file that specifies NX, NY, NZ, DELTA_X, X_BC, Y_BC, Z_BC. The BCs have the format `type,val,type,val`, where "type" is either "derivative" or "constant", or `periodic`.
 - sigma.h5 -- hdf5 file that specifies the conductivity field
 - source.h5 -- hdf5 that specifies the source field
 
