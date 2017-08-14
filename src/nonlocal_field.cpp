@@ -49,7 +49,7 @@ void NonLocalField<double***>::send_global_to_local()
             {
                 for (int k = xs; k < xs+xm; ++k)
                 {
-                    local_array[-1][j][k] = global_array[1][j][k] - 2.*z_bc->lower_BC_val;
+                    local_array[-1][j][k] = global_array[1][j][k] - 2.*DELTA_X*z_bc->lower_BC_val;
                 }
             }
         }
