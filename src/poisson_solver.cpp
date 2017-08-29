@@ -126,7 +126,7 @@ void PoissonSolver::run_solver(std::string output_file)
     double coeffpxhalf, coeffpyhalf, coeffpzhalf, coeffmxhalf, coeffmyhalf, coeffmzhalf;
     for (int Ii = Istart; Ii < Iend; ++Ii)
     {
-        i = Ii/(NX*NY); j = (Ii - i*(NX*NY))/NX; k = Ii - j*NY - i*NX*NY;
+        i = Ii/(NX*NY); j = (Ii - i*(NX*NY))/NX; k = Ii - j*NX - i*NX*NY;
         
         // Careful with signs: here, positive on the diagonals.
         // Retrieve coeff values, including neighboring values.

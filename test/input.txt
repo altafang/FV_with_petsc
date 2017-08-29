@@ -1,6 +1,6 @@
-NX = 60
+NX = 40
 NY = 60
-NZ = 60
+NZ = 40
 
 DELTA_X = 1.
 
