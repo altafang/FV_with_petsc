@@ -175,7 +175,7 @@ void PoissonSolver::run_solver(std::string output_file)
             MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
         }
         
-        // Periodic boundary conditions in z
+        // Periodic boundary conditions in z. If one side is periodic, both are.
         if (Z_BC.lower_BC_type == periodicBC)
         {
             if (i == 0)
@@ -189,29 +189,6 @@ void PoissonSolver::run_solver(std::string output_file)
                 J = Ii - NX*NY*NZ + NX*NY;
                 v = -coeffpzhalf;
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
-            }
-        }
-        else
-        {
-            // Derivative boundary conditions in z
-            if (Z_BC.lower_BC_type == derivativeBC)
-            {
-                if (i == 0)
-                {
-                    J = Ii + NX*NY;
-                    v = -coeffmzhalf-coeffpzhalf;
-                    MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
-                }
-            }
-            // Derivative boundary conditions in z
-            if (Z_BC.upper_BC_type == derivativeBC)
-            {
-                if (i == NZ - 1)
-                {
-                    J = Ii - NX*NY;
-                    v = -coeffmzhalf-coeffpzhalf;
-                    MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
-                }
             }
         }
         
@@ -231,28 +208,6 @@ void PoissonSolver::run_solver(std::string output_file)
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
             }
         }
-        // Zero-flux boundary conditions in y. 
-        else 
-        {
-            if (Y_BC.lower_BC_type == derivativeBC)
-            {
-                if (j == 0)
-                {
-                    J = Ii + NX;
-                    v = -coeffmyhalf-coeffpyhalf;
-                    MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
-                }
-            }
-            if (Y_BC.upper_BC_type == derivativeBC)
-            {                    
-                if (j == NY - 1)
-                {
-                    J = Ii - NX;
-                    v = -coeffmyhalf-coeffpyhalf;
-                    MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
-                }
-            }
-        }
         
         // Periodic boundary conditions in x
         if (X_BC.lower_BC_type == periodicBC)
@@ -270,31 +225,57 @@ void PoissonSolver::run_solver(std::string output_file)
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
             }
         }
-        // Zero-flux boundary conditions in x. 
-        else 
+                        
+        // Diagonal term
+        v = coeffmxhalf + coeffmyhalf + coeffmzhalf + coeffpxhalf + coeffpyhalf + coeffpzhalf;
+        
+        // Derivative boundary conditions in z
+        if (Z_BC.lower_BC_type == derivativeBC)
         {
-            if (X_BC.lower_BC_type == derivativeBC)
+            if (i == 0)
             {
-                if (k == 0)
-                {
-                    J = Ii + 1;
-                    v = -coeffmxhalf-coeffpxhalf;
-                    MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
-                }
+                v -= coeffmzhalf;
             }
-            if (X_BC.upper_BC_type == derivativeBC)
+        }
+        if (Z_BC.upper_BC_type == derivativeBC)
+        {
+            if (i == NZ - 1)
             {
-                if (k == NX - 1)
-                {
-                    J = Ii - 1;
-                    v = -coeffmxhalf-coeffpxhalf;
-                    MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
-                }
+                v -= coeffpzhalf;
             }
         }
                 
-        // Diagonal term
-        v = coeffmxhalf + coeffmyhalf + coeffmzhalf + coeffpxhalf + coeffpyhalf + coeffpzhalf;
+        // Derivative boundary conditions in y. 
+        if (Y_BC.lower_BC_type == derivativeBC)
+        {
+            if (j == 0)
+            {
+                v -= coeffmyhalf;
+            }
+        }
+        if (Y_BC.upper_BC_type == derivativeBC)
+        {                    
+            if (j == NY - 1)
+            {
+                v -= coeffpyhalf;
+            }
+        }
+                
+        // Zero-flux boundary conditions in x. 
+        if (X_BC.lower_BC_type == derivativeBC)
+        {
+            if (k == 0)
+            {
+                v -= coeffmxhalf;
+            }
+        }
+        if (X_BC.upper_BC_type == derivativeBC)
+        {
+            if (k == NX - 1)
+            {
+                v -= coeffpxhalf;
+            }
+        }
         
         MatSetValues(linear_sys->A,1,&Ii,1,&Ii,&v,INSERT_VALUES);
     }
@@ -316,7 +297,7 @@ void PoissonSolver::run_solver(std::string output_file)
         // Default
         v = -source->global_array[i][j][k];
         
-        // Constant BCs for z
+        // Constant or derivative BCs for z
         if (i == 0)
         {
             coeffmzhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i-1][j][k])/(DELTA_X*DELTA_X);
@@ -327,7 +308,7 @@ void PoissonSolver::run_solver(std::string output_file)
             }
             else if (Z_BC.lower_BC_type == derivativeBC)
             {
-                v += 2.*DELTA_X*coeffmzhalf*Z_BC.lower_BC_val;
+                v += DELTA_X*coeffmzhalf*Z_BC.lower_BC_val;
             }
         }
         else if (i == NZ - 1)
@@ -340,10 +321,10 @@ void PoissonSolver::run_solver(std::string output_file)
             }
             else if (Z_BC.upper_BC_type == derivativeBC)
             {
-                v += 2.*DELTA_X*coeffpzhalf*Z_BC.upper_BC_val;
+                v += DELTA_X*coeffpzhalf*Z_BC.upper_BC_val;
             }
         }
-        // Constant BCs for y
+        // Constant or derivative BCs for y
         if (j == 0)
         {
             coeffmyhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i][j-1][k])/(DELTA_X*DELTA_X);
@@ -354,7 +335,7 @@ void PoissonSolver::run_solver(std::string output_file)
             }
             else if (Y_BC.lower_BC_type == derivativeBC)
             {
-                v += 2.*DELTA_X*coeffmyhalf*Y_BC.lower_BC_val;
+                v += DELTA_X*coeffmyhalf*Y_BC.lower_BC_val;
             }
         }
         else if (j == NY - 1)
@@ -367,10 +348,10 @@ void PoissonSolver::run_solver(std::string output_file)
             }
             else if (Y_BC.upper_BC_type == derivativeBC)
             {
-                v += 2.*DELTA_X*coeffpyhalf*Y_BC.upper_BC_val;
+                v += DELTA_X*coeffpyhalf*Y_BC.upper_BC_val;
             }
         }
-        // Constant BCs for x
+        // Constant or derivative BCs for x
         if (k == 0)
         {
             coeffmxhalf = 0.5*(sigma->local_array[i][j][k] + sigma->local_array[i][j][k-1])/(DELTA_X*DELTA_X);
@@ -381,7 +362,7 @@ void PoissonSolver::run_solver(std::string output_file)
             }
             else if (X_BC.lower_BC_type == derivativeBC)
             {
-                v += 2.*DELTA_X*coeffmxhalf*X_BC.lower_BC_val;
+                v += DELTA_X*coeffmxhalf*X_BC.lower_BC_val;
             }
         }
         else if (k == NX - 1)
@@ -394,7 +375,7 @@ void PoissonSolver::run_solver(std::string output_file)
             }
             else if (X_BC.upper_BC_type == derivativeBC)
             {
-                v += 2.*DELTA_X*coeffpxhalf*X_BC.upper_BC_val;
+                v += DELTA_X*coeffpxhalf*X_BC.upper_BC_val;
             }
         }
         VecSetValue(linear_sys->b, Ii, v, INSERT_VALUES);
