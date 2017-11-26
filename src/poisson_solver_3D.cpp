@@ -1,4 +1,4 @@
-#include "poisson_solver.hpp"
+#include "poisson_solver_3D.hpp"
 #include "bc.hpp"
 #include <unordered_map>
 
@@ -15,7 +15,7 @@ DMBoundaryType get_BC_type(BC_type type)
     }
 }
 
-void PoissonSolver::read_input(const std::string &input_file)
+void PoissonSolver3D::read_input(const std::string &input_file)
 {
     std::map<std::string, std::string> params;
     read_parameters(params, input_file);
@@ -32,7 +32,7 @@ void PoissonSolver::read_input(const std::string &input_file)
 }
 
 // Constructor
-PoissonSolver::PoissonSolver(std::string input_file, std::string sigma_file, std::string source_file)
+PoissonSolver3D::PoissonSolver3D(std::string input_file, std::string sigma_file, std::string source_file)
 {
     // Read input parameters from text file called "input.txt"
     // and unpack the input parameters.
@@ -86,7 +86,7 @@ PoissonSolver::PoissonSolver(std::string input_file, std::string sigma_file, std
 }
 
 // Destructor
-PoissonSolver::~PoissonSolver()
+PoissonSolver3D::~PoissonSolver3D()
 {
     delete linear_sys;
     delete phi;
@@ -97,7 +97,7 @@ PoissonSolver::~PoissonSolver()
 
 // The code here is adapted from
 // http://www.mcs.anl.gov/petsc/petsc-3.6/src/ksp/ksp/examples/tutorials/ex2.c.html
-void PoissonSolver::run_solver(std::string output_file)
+void PoissonSolver3D::run_solver(std::string output_file)
 {
     // Make ghost rows available
     sigma->send_global_to_local();
@@ -408,6 +408,4 @@ void PoissonSolver::run_solver(std::string output_file)
     
     // Save the solution to a file
     phi->write_to_file(output_file);
-    
-    return;
 }

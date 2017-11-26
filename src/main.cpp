@@ -6,7 +6,7 @@
 //    mpiexec -np 2 ./solve_poisson
 
 #include <petscsys.h>
-#include "poisson_solver.hpp"
+#include "poisson_solver_3D.hpp"
 #include <cmath>
 
 int main(int argc,char **args)
@@ -14,7 +14,7 @@ int main(int argc,char **args)
     PetscInitialize(&argc,&args,NULL,NULL);
 
     // Create a PoissonSolver
-    PoissonSolver *solver = new PoissonSolver();
+    PoissonSolver3D *solver = new PoissonSolver3D();
     
     // Run the solver
     solver->run_solver();

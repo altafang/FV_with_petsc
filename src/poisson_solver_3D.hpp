@@ -1,17 +1,18 @@
-#ifndef POISSON_SOLVER_H
-#define POISSON_SOLVER_H
+#ifndef POISSON_SOLVER_3D_H
+#define POISSON_SOLVER_3D_H
 
 #include "IO_tools.hpp"
 #include "nonlocal_field.hpp"
 #include "linear_sys.hpp"
 #include <string>
 
-class PoissonSolver
+class PoissonSolver3D
 {
     public:    
-        PoissonSolver(std::string input_file="input.txt", \
-                std::string sigma_file="sigma.h5", std::string source_file="source.h5");
-        ~PoissonSolver();
+        PoissonSolver3D(std::string input_file="input.txt", 
+                        std::string sigma_file="sigma.h5", 
+                        std::string source_file="source.h5");
+        ~PoissonSolver3D();
         void read_input(const std::string &input_file);
         void run_solver(std::string output_file="phi.h5");
         
