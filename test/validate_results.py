@@ -22,7 +22,7 @@ def validate_results(path = "", plot=True):
     phi = read_hdf5(path + "phi.h5", dims)
 
     # Check that it is linear
-    theoretical_1D = numpy.linspace(1, 0, NZ+2)[1:-1]
+    theoretical_1D = numpy.linspace(1, 0, NX+2)[1:-1]
     theoretical_3D = numpy.broadcast_to(theoretical_1D.reshape(1,1,NX), (NZ, NY, NX))
     # Assert if error is too large
     try:
@@ -34,13 +34,13 @@ def validate_results(path = "", plot=True):
         print e
 
     if plot:
-        pyplot.imshow(phi[:,:,NX/2])
-        pyplot.savefig("slice2D_NXhalf.png")
+        pyplot.imshow(phi[NZ/2,:,:])
+        pyplot.savefig("slice2D_half.png")
         pyplot.show()
         
         # Check that it is linear
-        pyplot.plot(range(NZ), theoretical_1D, 'r')
-        pyplot.plot(range(NZ), phi[:,NY/2,NX/2], 'k-o')
+        pyplot.plot(range(NX), theoretical_1D, 'r')
+        pyplot.plot(range(NX), phi[NZ/2,NY/2,:], 'k-o')
         pyplot.savefig("slice1D_middle.png")
         pyplot.show()
 

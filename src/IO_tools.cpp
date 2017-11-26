@@ -4,6 +4,7 @@
 // The logging code has been removed.
 
 #include "IO_tools.hpp"
+#include <vector>
 
 // utility function for appending numbers to hdf5 filenames, if there is a series
 std::string number_filename(std::string base_filename, int counter)
@@ -50,24 +51,16 @@ void unpack(std::map<std::string, std::string> hash, std::string name, int & par
 
 BC_type convert_to_BCtype(std::string name)
 {
-    if (name == "periodic")
+    if (name == "constant")
     {
-        return periodicBC;
+        return constantBC;
     }
     else if (name == "derivative")
     {
         return derivativeBC;
     }
-    else if (name == "constant")
-    {
-        return constantBC;
-    }
-    else
-    {
-        // XXX need better error handling
-        PetscPrintf(PETSC_COMM_WORLD, "Warning: %s not valid boundary condition type; defaulting to derivative\n");
-        return derivativeBC;
-    }
+    PetscPrintf(PETSC_COMM_WORLD, "Error: invalid boundary condition.\n");
+    PetscEnd();
 }
 
 template <> // explicit specialization for T = BC
@@ -77,36 +70,33 @@ void unpack(std::map<std::string, std::string> hash, std::string name, BC & para
     it = hash.find(name);
     if (it==hash.end()) { // parameter not found
         PetscPrintf(PETSC_COMM_WORLD, "Parameter %s not found\n", name.c_str());
-        MPI_Abort(PETSC_COMM_WORLD, 0);
+        PetscEnd();
     } else { // parameter found
         // Split line using commas
         std::istringstream ss(it->second);
         std::string token;
-        int counter = 0;
+        std::vector<std::string> BC_input;
         while (std::getline(ss, token, ','))
         {
-            if (counter == 0)
-            {
-                parameter.lower_BC_type = convert_to_BCtype(token);
-            }
-            else if (counter == 1)
-            {
-                parameter.lower_BC_val = std::stod(token);
-            }
-            else if (counter == 2)
-            {
-                parameter.upper_BC_type = convert_to_BCtype(token);
-            }
-            else if (counter == 3)
-            {
-                parameter.upper_BC_val = std::stod(token);
-            }
-            else
-            {
-                PetscPrintf(PETSC_COMM_WORLD, "Boundary condition format should be"
-                    "type,val,type,val\n");
-            }
-            counter++;
+            BC_input.push_back(token);
+        }
+        // Now process vector of inputs
+        if ((BC_input.size() == 1) && (BC_input[0] == "periodic"))
+        {
+            parameter.lower_BC_type = periodicBC;
+            parameter.upper_BC_type = periodicBC;    
+        }
+        else if (BC_input.size() == 4)
+        {
+            parameter.lower_BC_type = convert_to_BCtype(BC_input[0]);
+            parameter.lower_BC_val = std::stod(BC_input[1]);
+            parameter.upper_BC_type = convert_to_BCtype(BC_input[2]);
+            parameter.upper_BC_val = std::stod(BC_input[3]);
+        }
+        else
+        {
+            PetscPrintf(PETSC_COMM_WORLD, "Error: invalid boundary conditions!\n");
+            PetscEnd();
         }
     }
 }
