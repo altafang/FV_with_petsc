@@ -1,8 +1,8 @@
 // Alta Fang, 2017
 //
-// Solve Poisson's equation in 3D using PETSc.
+// Solve Poisson's equation using PETSc.
 // 
-// To run on two processors, execute  for example:
+// To run on two processors, execute for example:
 //    mpiexec -np 2 ./solve_poisson
 
 #include <petscsys.h>

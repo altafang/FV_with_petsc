@@ -63,6 +63,16 @@ BC_type convert_to_BCtype(std::string name)
     PetscEnd();
 }
 
+// Helper function: convert user-input BC type to appropriate PETSc BC options 
+DMBoundaryType get_BC_type(BC_type type)
+{
+    if (type == periodicBC)
+    {
+        return DM_BOUNDARY_PERIODIC;
+    }
+    return DM_BOUNDARY_GHOSTED;
+}
+
 template <> // explicit specialization for T = BC
 void unpack(std::map<std::string, std::string> hash, std::string name, BC & parameter)
 {

@@ -40,4 +40,7 @@ void unpack(std::map<std::string, int> name_index, std::string name, int &index)
 
 void read_parameters(std::map<std::string, std::string> &params, std::string input_file="input.txt");
 
+// Helper function: convert user-input BC type to appropriate PETSc BC options 
+DMBoundaryType get_BC_type(BC_type type);
+
 #endif
