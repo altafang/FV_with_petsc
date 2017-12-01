@@ -1,11 +1,13 @@
 # Example script for reading results
 import numpy
 import h5py
-import pylab
-import matplotlib
 from matplotlib import pyplot
 import subprocess
 import numpy.testing
+
+# XXX Assumes that all testing scripts are run from within their respective directories!
+import sys
+sys.path.insert(0, '../')
 from tools import *
 
 def validate_results(path = "", plot=True):

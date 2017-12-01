@@ -2,6 +2,10 @@
 import h5py
 import numpy
 from matplotlib import pyplot
+
+# XXX Assumes that all testing scripts are run from within their respective directories!
+import sys
+sys.path.insert(0, '../')
 from tools import *
 
 def make_sigma(path="", plot=True):

@@ -5,9 +5,7 @@
 // To run on two processors, execute for example:
 //    mpiexec -np 2 ./solve_poisson
 
-#include <petscsys.h>
 #include "poisson_solver_3D.hpp"
-#include <cmath>
 
 int main(int argc,char **args)
 {

@@ -3,6 +3,8 @@
 #ifndef FIELD_H
 #define FIELD_H
 
+#include <petscsys.h>
+#include <cmath>
 #include <petscdm.h>
 #include <petscdmda.h>
 #include <petscksp.h>

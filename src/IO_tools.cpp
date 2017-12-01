@@ -59,7 +59,7 @@ BC_type convert_to_BCtype(std::string name)
     {
         return derivativeBC;
     }
-    PetscPrintf(PETSC_COMM_WORLD, "Error: invalid boundary condition.\n");
+    throw "Error: invalid boundary condition.\n";
     PetscEnd();
 }
 
