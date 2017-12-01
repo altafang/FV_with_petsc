@@ -3,7 +3,7 @@
 // Solve Poisson's equation using PETSc.
 // 
 // To run on two processors, execute for example:
-//    mpiexec -np 2 ./solve_poisson
+//    mpiexec -np 2 ./solve_poisson_3D
 
 #include "poisson_solver_3D.hpp"
 

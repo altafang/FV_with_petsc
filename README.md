@@ -1,6 +1,6 @@
 # FV_with_petsc
 
-This C++ code uses PETSc to numerically solves Poisson's equation using the finite volume method on a regular grid in 3D.
+This C++ code uses PETSc to numerically solves Poisson's equation using the finite volume method on a regular grid in 2D or 3D.
 The solve can be done in parallel on multiple processors as specified at runtime. 
 The idea is to wrap the specific PETSc calls so that the user does not need to worry about learning PETSc syntax and usage details.
 For example, this package can be used to numerically calculate the effective conductivity of a material with an arbitrary microstructure.
@@ -24,21 +24,33 @@ Note: this package is very much under development. The goal is to eventually inc
 
 ## Usage
 
-To compile, run `make`. The executable `solve_poisson` will be in the `bin/` directory. To run on 2 processors, for example, execute the following command:
+To compile, run `make`. The executable `solve_poisson` will be in the `bin/` directory. 
+For example, to solve a 3D problem on 2 processors, execute the following command:
 
 ```
-mpiexec -np 2 ./solve_poisson
+mpiexec -np 2 ./solve_poisson_3D
+```
+
+As another example, to solve a 2D problem on 1 processor, execute the following command:
+
+```
+mpiexec -np 1 ./solve_poisson_2D
 ```
 
 Inputs:
-- input.txt -- text file that specifies NX, NY, NZ, DELTA_X, X_BC, Y_BC, Z_BC. The BCs have the format `type,val,type,val`, where "type" is either "derivative" or "constant", or `periodic`.
+- input.txt -- text file that specifies, for 3D: NX, NY, NZ, DELTA_X, X_BC, Y_BC, Z_BC,
+and for 2D: NX, NY, DELTA_X, X_BC, Y_BC. The BCs have the format `type,val,type,val`, 
+where "type" is either "derivative" or "constant", or `periodic`.
 - sigma.h5 -- hdf5 file that specifies the conductivity field
 - source.h5 -- hdf5 that specifies the source field
 
 Outputs:
 - phi.h5 -- hdf5 file with the solved field
 
-For example(s), see the `test/` directory. In the `test/` directory, run `python make_inputs.py` and then run `mpiexec -np 2 ../bin/solve_poisson`. 
+For examples, see the `test/` directory. The general workflow is to go in the particular 
+test directory, and run `python make_inputs.py`, copy the appropriate executable into that
+directory, and then run `mpiexec -np 1 ./<executable name>`, where the executable name is either
+`solve_poisson_2D` or `solve_poisson_3D`.
 
 ## Installing PETSc
 

@@ -2,6 +2,7 @@
 *.h5
 *.png
 *.pyc
+*.o
 
 # Binary/executable files
 bin/*
