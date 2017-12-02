@@ -20,7 +20,7 @@ std::string number_filename(std::string base_filename, int counter)
 template <typename T> // primary template
 void unpack(std::map<std::string, std::string> params, std::string name, T &parameter)
 {
-    MPI_Abort(PETSC_COMM_WORLD, 0);
+    PetscEnd();
 }
 
 template <> // explicit specialization for T = double
@@ -30,7 +30,7 @@ void unpack(std::map<std::string, std::string> hash, std::string name, double & 
     it = hash.find(name);
     if (it==hash.end()) { // parameter not found
         PetscPrintf(PETSC_COMM_WORLD, "Parameter %s not found\n", name.c_str());
-        MPI_Abort(PETSC_COMM_WORLD, 0);
+        PetscEnd();
     } else { // parameter found
         parameter = std::stod(it->second);
     }
@@ -43,7 +43,7 @@ void unpack(std::map<std::string, std::string> hash, std::string name, int & par
     it = hash.find(name);
     if (it==hash.end()) { // parameter not found
         PetscPrintf(PETSC_COMM_WORLD, "Parameter %s not found\n", name.c_str());
-        MPI_Abort(PETSC_COMM_WORLD, 0);
+        PetscEnd();
     } else { // parameter found
         parameter = std::stoi(it->second);
     }
@@ -51,12 +51,9 @@ void unpack(std::map<std::string, std::string> hash, std::string name, int & par
 
 BC_type convert_to_BCtype(std::string name)
 {
-    if (name == "constant")
-    {
+    if (name == "constant") {
         return constantBC;
-    }
-    else if (name == "derivative")
-    {
+    } else if (name == "derivative") {
         return derivativeBC;
     }
     throw "Error: invalid boundary condition.\n";
@@ -66,8 +63,7 @@ BC_type convert_to_BCtype(std::string name)
 // Helper function: convert user-input BC type to appropriate PETSc BC options 
 DMBoundaryType get_BC_type(BC_type type)
 {
-    if (type == periodicBC)
-    {
+    if (type == periodicBC) {
         return DM_BOUNDARY_PERIODIC;
     }
     return DM_BOUNDARY_GHOSTED;
@@ -86,25 +82,19 @@ void unpack(std::map<std::string, std::string> hash, std::string name, BC & para
         std::istringstream ss(it->second);
         std::string token;
         std::vector<std::string> BC_input;
-        while (std::getline(ss, token, ','))
-        {
+        while (std::getline(ss, token, ',')) {
             BC_input.push_back(token);
         }
         // Now process vector of inputs
-        if ((BC_input.size() == 1) && (BC_input[0] == "periodic"))
-        {
+        if ((BC_input.size() == 1) && (BC_input[0] == "periodic")) {
             parameter.lower_BC_type = periodicBC;
             parameter.upper_BC_type = periodicBC;    
-        }
-        else if (BC_input.size() == 4)
-        {
+        } else if (BC_input.size() == 4) {
             parameter.lower_BC_type = convert_to_BCtype(BC_input[0]);
             parameter.lower_BC_val = std::stod(BC_input[1]);
             parameter.upper_BC_type = convert_to_BCtype(BC_input[2]);
             parameter.upper_BC_val = std::stod(BC_input[3]);
-        }
-        else
-        {
+        } else {
             PetscPrintf(PETSC_COMM_WORLD, "Error: invalid boundary conditions!\n");
             PetscEnd();
         }
@@ -134,8 +124,7 @@ void read_parameters(std::map<std::string, std::string> &params, std::string inp
     std::ifstream input(input_file);
     std::string line;
     
-    while (std::getline(input, line))
-    {
+    while (std::getline(input, line)) {
         size_t pos;
         std::string key, value;
         

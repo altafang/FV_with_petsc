@@ -17,7 +17,8 @@ void PoissonSolver2D::read_input(const std::string &input_file)
 }
 
 // Constructor
-PoissonSolver2D::PoissonSolver2D(std::string input_file, std::string sigma_file, std::string source_file)
+PoissonSolver2D::PoissonSolver2D(std::string input_file, std::string sigma_file, 
+                                 std::string source_file)
 {
     // Read input parameters from text file called "input.txt"
     // and unpack the input parameters.
@@ -27,8 +28,10 @@ PoissonSolver2D::PoissonSolver2D(std::string input_file, std::string sigma_file,
     // Lateral boundary conditions may be either periodic or zero-flux
     // For periodic, use DM_BOUNDARY_PERIODIC
     // For zero-flux, typically one should use DM_BOUNDARY_MIRROR
-    // But, in 3D DM_BOUNDARY_MIRROR is not yet implemented so use DM_BOUNDARY_GHOSTED and manually fill the ghost cells    
-    DMDACreate2d(PETSC_COMM_WORLD, get_BC_type(X_BC.lower_BC_type), get_BC_type(Y_BC.lower_BC_type), DMDA_STENCIL_STAR, \
+    // But, in 3D DM_BOUNDARY_MIRROR is not yet implemented so use DM_BOUNDARY_GHOSTED and
+    // manually fill the ghost cells    
+    DMDACreate2d(PETSC_COMM_WORLD, get_BC_type(X_BC.lower_BC_type), 
+                 get_BC_type(Y_BC.lower_BC_type), DMDA_STENCIL_STAR, 
                  NX, NY, 1, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &da);
     
     // Initialize with z boundary conditions
@@ -55,10 +58,8 @@ PoissonSolver2D::PoissonSolver2D(std::string input_file, std::string sigma_file,
     DMDAGetCorners(da, &xs, &ys, NULL, &xm, &ym, NULL);
 
     // Fill in initial values.
-    for (int i = ys; i < ys+ym; i++)
-    {
-        for (int j = xs; j < xs+xm; j++)
-        {
+    for (int i = ys; i < ys+ym; i++) {
+        for (int j = xs; j < xs+xm; j++) {
             phi->global_array[i][j] = 0.;
         }
     }
@@ -105,54 +106,50 @@ void PoissonSolver2D::run_solver(std::string output_file)
     // would first do all variables for y = h, then y = 2h etc.
     
     double coeffpxhalf, coeffpyhalf, coeffmxhalf, coeffmyhalf;
-    for (int Ii = Istart; Ii < Iend; ++Ii)
-    {
+    for (int Ii = Istart; Ii < Iend; ++Ii) {
         i = Ii/NX; j = Ii - i*NX;
         
         // Careful with signs: here, positive on the diagonals.
         // Retrieve coeff values, including neighboring values.
-        coeffpxhalf = 0.5*(sigma->local_array[i][j] + sigma->local_array[i][j+1])/(DELTA_X*DELTA_X);
-        coeffmxhalf = 0.5*(sigma->local_array[i][j] + sigma->local_array[i][j-1])/(DELTA_X*DELTA_X);
-        coeffpyhalf = 0.5*(sigma->local_array[i][j] + sigma->local_array[i+1][j])/(DELTA_X*DELTA_X);
-        coeffmyhalf = 0.5*(sigma->local_array[i][j] + sigma->local_array[i-1][j])/(DELTA_X*DELTA_X);
+        coeffpxhalf = 0.5*(sigma->local_array[i][j] + sigma->local_array[i][j+1])
+                      /(DELTA_X*DELTA_X);
+        coeffmxhalf = 0.5*(sigma->local_array[i][j] + sigma->local_array[i][j-1])
+                      /(DELTA_X*DELTA_X);
+        coeffpyhalf = 0.5*(sigma->local_array[i][j] + sigma->local_array[i+1][j])
+                      /(DELTA_X*DELTA_X);
+        coeffmyhalf = 0.5*(sigma->local_array[i][j] + sigma->local_array[i-1][j])
+                      /(DELTA_X*DELTA_X);
         
         // Fill in the finite-volume stencil
-        if (i>0)
-        {
+        if (i > 0) {
             J = Ii - NX;
             v = -coeffmyhalf;
             MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
         }
-        if (i<NY-1)
-        {
+        if (i < NY-1) {
             J = Ii + NX;
             v = -coeffpyhalf;
             MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
         }
-        if (j>0)
-        {
+        if (j > 0) {
             J = Ii - 1;
             v = -coeffmxhalf;
             MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
         }
-        if (j<NX-1)
-        {
+        if (j < NX-1) {
             J = Ii + 1;
             v = -coeffpxhalf;
             MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
         }
                 
         // Periodic boundary conditions in y. If one side is periodic, both are.
-        if (Y_BC.lower_BC_type == periodicBC)
-        {
-            if (i == 0)
-            {
+        if (Y_BC.lower_BC_type == periodicBC) {
+            if (i == 0) {
                 J = Ii + NX*NY - NX;
                 v = -coeffmyhalf;
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
             }
-            if (i == NY - 1)
-            {
+            if (i == NY - 1) {
                 J = Ii - NX*NY + NX;
                 v = -coeffpyhalf;
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
@@ -160,16 +157,13 @@ void PoissonSolver2D::run_solver(std::string output_file)
         }
         
         // Periodic boundary conditions in x
-        if (X_BC.lower_BC_type == periodicBC)
-        {
-            if (j == 0)
-            {
+        if (X_BC.lower_BC_type == periodicBC) {
+            if (j == 0) {
                 J = Ii + NX - 1;
                 v = -coeffmxhalf;
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
             }
-            if (j == NY - 1)
-            {
+            if (j == NY - 1) {
                 J = Ii - NX + 1;
                 v = -coeffpxhalf;
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
@@ -180,33 +174,25 @@ void PoissonSolver2D::run_solver(std::string output_file)
         v = coeffmxhalf + coeffmyhalf + coeffpxhalf + coeffpyhalf;
                 
         // Derivative boundary conditions in y. 
-        if (Y_BC.lower_BC_type == derivativeBC)
-        {
-            if (i == 0)
-            {
+        if (Y_BC.lower_BC_type == derivativeBC) {
+            if (i == 0) {
                 v -= coeffmyhalf;
             }
         }
-        if (Y_BC.upper_BC_type == derivativeBC)
-        {                    
-            if (i == NY - 1)
-            {
+        if (Y_BC.upper_BC_type == derivativeBC) {                    
+            if (i == NY - 1) {
                 v -= coeffpyhalf;
             }
         }
                 
         // Zero-flux boundary conditions in x. 
-        if (X_BC.lower_BC_type == derivativeBC)
-        {
-            if (j == 0)
-            {
+        if (X_BC.lower_BC_type == derivativeBC) {
+            if (j == 0) {
                 v -= coeffmxhalf;
             }
         }
-        if (X_BC.upper_BC_type == derivativeBC)
-        {
-            if (j == NX - 1)
-            {
+        if (X_BC.upper_BC_type == derivativeBC) {
+            if (j == NX - 1) {
                 v -= coeffpxhalf;
             }
         }
@@ -224,64 +210,49 @@ void PoissonSolver2D::run_solver(std::string output_file)
     
     // Set right-hand-side vector.
     VecGetOwnershipRange(linear_sys->b,&Istart,&Iend);
-    for (int Ii = Istart; Ii < Iend; ++Ii)
-    {
+    for (int Ii = Istart; Ii < Iend; ++Ii) {
         i = Ii/NX; j = Ii - i*NX;
         
         // Default
         v = -source->global_array[i][j];
         
         // Constant or derivative BCs for y
-        if (i == 0)
-        {
-            coeffmyhalf = 0.5*(sigma->local_array[i][j] + sigma->local_array[i-1][j])/(DELTA_X*DELTA_X);
+        if (i == 0) {
+            coeffmyhalf = 0.5*(sigma->local_array[i][j] 
+                          + sigma->local_array[i-1][j])/(DELTA_X*DELTA_X);
             
-            if (Y_BC.lower_BC_type == constantBC)
-            {
+            if (Y_BC.lower_BC_type == constantBC) {
                 v += coeffmyhalf*Y_BC.lower_BC_val;
-            }
-            else if (Y_BC.lower_BC_type == derivativeBC)
-            {
+            } else if (Y_BC.lower_BC_type == derivativeBC) {
                 v += DELTA_X*coeffmyhalf*Y_BC.lower_BC_val;
             }
-        }
-        else if (i == NY - 1)
-        {
-            coeffpyhalf = 0.5*(sigma->local_array[i][j] + sigma->local_array[i+1][j])/(DELTA_X*DELTA_X);
+        } else if (i == NY - 1) {
+            coeffpyhalf = 0.5*(sigma->local_array[i][j] 
+                          + sigma->local_array[i+1][j])/(DELTA_X*DELTA_X);
             
-            if (Y_BC.upper_BC_type == constantBC)
-            {
+            if (Y_BC.upper_BC_type == constantBC) {
                 v += coeffpyhalf*Y_BC.upper_BC_val;
-            }
-            else if (Y_BC.upper_BC_type == derivativeBC)
-            {
+            } else if (Y_BC.upper_BC_type == derivativeBC) {
                 v += DELTA_X*coeffpyhalf*Y_BC.upper_BC_val;
             }
         }
         // Constant or derivative BCs for x
-        if (j == 0)
-        {
-            coeffmxhalf = 0.5*(sigma->local_array[i][j] + sigma->local_array[i][j-1])/(DELTA_X*DELTA_X);
+        if (j == 0) {
+            coeffmxhalf = 0.5*(sigma->local_array[i][j] 
+                          + sigma->local_array[i][j-1])/(DELTA_X*DELTA_X);
             
-            if (X_BC.lower_BC_type == constantBC)
-            {
+            if (X_BC.lower_BC_type == constantBC) {
                 v += coeffmxhalf*X_BC.lower_BC_val;
-            }
-            else if (X_BC.lower_BC_type == derivativeBC)
-            {
+            } else if (X_BC.lower_BC_type == derivativeBC) {
                 v += DELTA_X*coeffmxhalf*X_BC.lower_BC_val;
             }
-        }
-        else if (j == NX - 1)
-        {
-            coeffpxhalf = 0.5*(sigma->local_array[i][j] + sigma->local_array[i][j+1])/(DELTA_X*DELTA_X);
+        } else if (j == NX - 1) {
+            coeffpxhalf = 0.5*(sigma->local_array[i][j] 
+                          + sigma->local_array[i][j+1])/(DELTA_X*DELTA_X);
             
-            if (X_BC.upper_BC_type == constantBC)
-            {
+            if (X_BC.upper_BC_type == constantBC) {
                 v += coeffpxhalf*X_BC.upper_BC_val;
-            }
-            else if (X_BC.upper_BC_type == derivativeBC)
-            {
+            } else if (X_BC.upper_BC_type == derivativeBC) {
                 v += DELTA_X*coeffpxhalf*X_BC.upper_BC_val;
             }
         }

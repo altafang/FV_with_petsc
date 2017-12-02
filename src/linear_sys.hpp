@@ -5,8 +5,8 @@
 #include <petscdmda.h>
 #include <petscksp.h>
 
-// LinearSys is a struct since its members are public and it only has constructor and destructor, 
-// no other member functions.
+// LinearSys is a struct since its members are public and it only has constructor and 
+// destructor, no other member functions.
 // LinearSys holds and sets up a linear system that can be solved with PETSc.
 struct LinearSys
 {

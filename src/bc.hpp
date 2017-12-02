@@ -19,7 +19,8 @@ struct BC
     double upper_BC_val;
     
     // Default is zero-flux
-    BC() : lower_BC_type(derivativeBC), lower_BC_val(0), upper_BC_type(derivativeBC), upper_BC_val(0) {}
+    BC() : lower_BC_type(derivativeBC), lower_BC_val(0), upper_BC_type(derivativeBC), 
+           upper_BC_val(0) {}
 };
 
 #endif

@@ -30,7 +30,7 @@ def validate_results(path = "", plot=True):
         rtol = 1.e-3
         numpy.testing.assert_allclose(phi, theoretical_2D, rtol=rtol)
         # If no exception raised so far, then it passed
-        print "Ok: solution is within %f of theoretical." % rtol
+        print "Ok: solution is within a factor of %f of theoretical." % rtol
     except Exception as e:
         print e
 
