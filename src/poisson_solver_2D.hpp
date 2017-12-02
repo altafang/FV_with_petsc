@@ -1,9 +1,14 @@
 #ifndef POISSON_SOLVER_2D_H
 #define POISSON_SOLVER_2D_H
 
+#include <petscsys.h>
+#include <petscdm.h>
+#include <petscdmda.h>
+#include <string>
+#include "field.hpp"
 #include "nonlocal_field.hpp"
 #include "linear_sys.hpp"
-#include <string>
+#include "bc.hpp"
 
 class PoissonSolver2D
 {

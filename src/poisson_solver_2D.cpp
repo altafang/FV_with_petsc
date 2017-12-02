@@ -1,6 +1,12 @@
+#include <petscsys.h>
+#include <petscdm.h>
+#include <petscdmda.h>
+#include <string>
+#include <map>
+#include "IO_tools.hpp"
+#include "nonlocal_field.hpp"
+#include "linear_sys.hpp"
 #include "poisson_solver_2D.hpp"
-#include <unordered_map>
-
 
 void PoissonSolver2D::read_input(const std::string &input_file)
 {
@@ -25,15 +31,10 @@ PoissonSolver2D::PoissonSolver2D(std::string input_file, std::string sigma_file,
     read_input(input_file);
     
     // Set up the distributed array used for all fields.
-    // Lateral boundary conditions may be either periodic or zero-flux
-    // For periodic, use DM_BOUNDARY_PERIODIC
-    // For zero-flux, typically one should use DM_BOUNDARY_MIRROR
-    // But, in 3D DM_BOUNDARY_MIRROR is not yet implemented so use DM_BOUNDARY_GHOSTED and
-    // manually fill the ghost cells    
-    DMDACreate2d(PETSC_COMM_WORLD, get_BC_type(X_BC.lower_BC_type), 
-                 get_BC_type(Y_BC.lower_BC_type), DMDA_STENCIL_STAR, 
+    DMDACreate2d(PETSC_COMM_WORLD, X_BC.get_DMBoundaryType(), 
+                 Y_BC.get_DMBoundaryType(), DMDA_STENCIL_STAR, 
                  NX, NY, 1, PETSC_DECIDE, 1, 1, PETSC_NULL, PETSC_NULL, &da);
-    
+                 
     // Initialize with z boundary conditions
     phi = new NonLocalField<double**>(&da, &X_BC, &Y_BC, NULL, DELTA_X);
     PetscObjectSetName((PetscObject)phi->global_vec, "phi");
@@ -143,7 +144,7 @@ void PoissonSolver2D::run_solver(std::string output_file)
         }
                 
         // Periodic boundary conditions in y. If one side is periodic, both are.
-        if (Y_BC.lower_BC_type == periodicBC) {
+        if (Y_BC.lower_BC_type == BC_type::periodicBC) {
             if (i == 0) {
                 J = Ii + NX*NY - NX;
                 v = -coeffmyhalf;
@@ -157,7 +158,7 @@ void PoissonSolver2D::run_solver(std::string output_file)
         }
         
         // Periodic boundary conditions in x
-        if (X_BC.lower_BC_type == periodicBC) {
+        if (X_BC.lower_BC_type == BC_type::periodicBC) {
             if (j == 0) {
                 J = Ii + NX - 1;
                 v = -coeffmxhalf;
@@ -174,24 +175,24 @@ void PoissonSolver2D::run_solver(std::string output_file)
         v = coeffmxhalf + coeffmyhalf + coeffpxhalf + coeffpyhalf;
                 
         // Derivative boundary conditions in y. 
-        if (Y_BC.lower_BC_type == derivativeBC) {
+        if (Y_BC.lower_BC_type == BC_type::derivativeBC) {
             if (i == 0) {
                 v -= coeffmyhalf;
             }
         }
-        if (Y_BC.upper_BC_type == derivativeBC) {                    
+        if (Y_BC.upper_BC_type == BC_type::derivativeBC) {                    
             if (i == NY - 1) {
                 v -= coeffpyhalf;
             }
         }
                 
         // Zero-flux boundary conditions in x. 
-        if (X_BC.lower_BC_type == derivativeBC) {
+        if (X_BC.lower_BC_type == BC_type::derivativeBC) {
             if (j == 0) {
                 v -= coeffmxhalf;
             }
         }
-        if (X_BC.upper_BC_type == derivativeBC) {
+        if (X_BC.upper_BC_type == BC_type::derivativeBC) {
             if (j == NX - 1) {
                 v -= coeffpxhalf;
             }
@@ -221,18 +222,18 @@ void PoissonSolver2D::run_solver(std::string output_file)
             coeffmyhalf = 0.5*(sigma->local_array[i][j] 
                           + sigma->local_array[i-1][j])/(DELTA_X*DELTA_X);
             
-            if (Y_BC.lower_BC_type == constantBC) {
+            if (Y_BC.lower_BC_type == BC_type::constantBC) {
                 v += coeffmyhalf*Y_BC.lower_BC_val;
-            } else if (Y_BC.lower_BC_type == derivativeBC) {
+            } else if (Y_BC.lower_BC_type == BC_type::derivativeBC) {
                 v += DELTA_X*coeffmyhalf*Y_BC.lower_BC_val;
             }
         } else if (i == NY - 1) {
             coeffpyhalf = 0.5*(sigma->local_array[i][j] 
                           + sigma->local_array[i+1][j])/(DELTA_X*DELTA_X);
             
-            if (Y_BC.upper_BC_type == constantBC) {
+            if (Y_BC.upper_BC_type == BC_type::constantBC) {
                 v += coeffpyhalf*Y_BC.upper_BC_val;
-            } else if (Y_BC.upper_BC_type == derivativeBC) {
+            } else if (Y_BC.upper_BC_type == BC_type::derivativeBC) {
                 v += DELTA_X*coeffpyhalf*Y_BC.upper_BC_val;
             }
         }
@@ -241,18 +242,18 @@ void PoissonSolver2D::run_solver(std::string output_file)
             coeffmxhalf = 0.5*(sigma->local_array[i][j] 
                           + sigma->local_array[i][j-1])/(DELTA_X*DELTA_X);
             
-            if (X_BC.lower_BC_type == constantBC) {
+            if (X_BC.lower_BC_type == BC_type::constantBC) {
                 v += coeffmxhalf*X_BC.lower_BC_val;
-            } else if (X_BC.lower_BC_type == derivativeBC) {
+            } else if (X_BC.lower_BC_type == BC_type::derivativeBC) {
                 v += DELTA_X*coeffmxhalf*X_BC.lower_BC_val;
             }
         } else if (j == NX - 1) {
             coeffpxhalf = 0.5*(sigma->local_array[i][j] 
                           + sigma->local_array[i][j+1])/(DELTA_X*DELTA_X);
             
-            if (X_BC.upper_BC_type == constantBC) {
+            if (X_BC.upper_BC_type == BC_type::constantBC) {
                 v += coeffpxhalf*X_BC.upper_BC_val;
-            } else if (X_BC.upper_BC_type == derivativeBC) {
+            } else if (X_BC.upper_BC_type == BC_type::derivativeBC) {
                 v += DELTA_X*coeffpxhalf*X_BC.upper_BC_val;
             }
         }

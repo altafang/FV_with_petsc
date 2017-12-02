@@ -55,7 +55,7 @@ directory, and then run `mpiexec -np 1 ./<executable name>`, where the executabl
 ## Installing PETSc
 
 There are many installation configuration options, as described in the [PETSc installation documentation](http://www.mcs.anl.gov/petsc/documentation/installation.html).
-Here I give rough instructions that worked for me, but it may.
+Here I give rough instructions that worked for me, but you may need to adjust them to work for you.
 
 1. First download the latest `.tar.gz` release from [here](http://www.mcs.anl.gov/petsc/download/index.html). 
 2. Untar it by executing the command `tar -xvf <tarball filename here>`. 

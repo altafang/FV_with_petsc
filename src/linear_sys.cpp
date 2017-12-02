@@ -1,6 +1,8 @@
 // The code here is adapted from
 // http://www.mcs.anl.gov/petsc/petsc-3.6/src/ksp/ksp/examples/tutorials/ex2.c.html
 
+#include <petscsys.h>
+#include <petscksp.h>
 #include "linear_sys.hpp"
 
 // constructor

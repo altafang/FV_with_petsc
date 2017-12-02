@@ -1,6 +1,10 @@
 #ifndef NONLOCAL_FIELD_H
 #define NONLOCAL_FIELD_H
 
+#include <petscsys.h>
+#include <petscdm.h>
+#include <petscdmda.h>
+#include "bc.hpp"
 #include "field.hpp"
 
 template <typename T>

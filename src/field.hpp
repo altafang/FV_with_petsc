@@ -4,15 +4,9 @@
 #define FIELD_H
 
 #include <petscsys.h>
-#include <cmath>
 #include <petscdm.h>
 #include <petscdmda.h>
-#include <petscksp.h>
-#include "petscviewerhdf5.h"
-#include <iostream>
 #include <string>
-#include <iomanip>
-#include "IO_tools.hpp"
 
 template <typename T>
 class Field

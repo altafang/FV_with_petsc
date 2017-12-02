@@ -1,8 +1,12 @@
 #ifndef BC_H
 #define BC_H
 
+#include <petscsys.h>
+#include <petscdm.h>
+#include <petscdmda.h>
+
 // Use an enum for boundary condition flags
-enum BC_type 
+enum class BC_type 
 {
     constantBC,
     derivativeBC,
@@ -18,9 +22,18 @@ struct BC
     BC_type upper_BC_type;
     double upper_BC_val;
     
-    // Default is zero-flux
-    BC() : lower_BC_type(derivativeBC), lower_BC_val(0), upper_BC_type(derivativeBC), 
-           upper_BC_val(0) {}
+    // Constructor: default is zero-flux
+    BC() : lower_BC_type(BC_type::derivativeBC), lower_BC_val(0), 
+           upper_BC_type(BC_type::derivativeBC), upper_BC_val(0) {}
+           
+    // Helper function to convert to PETSc's DMDA boundary condition types
+    DMBoundaryType get_DMBoundaryType()
+    {
+        if (lower_BC_type == BC_type::periodicBC) {
+            return DM_BOUNDARY_PERIODIC;
+        }
+        return DM_BOUNDARY_GHOSTED;
+    }
 };
 
 #endif

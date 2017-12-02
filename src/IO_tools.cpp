@@ -3,8 +3,26 @@
 // It provides utilities for reading input parameters from a text file.
 // The logging code has been removed.
 
-#include "IO_tools.hpp"
 #include <vector>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+#include <iomanip>
+#include <algorithm> // std::remove
+#include <petscsys.h>
+#include "IO_tools.hpp"
+
+// Process boundary condition types input from the input file.
+BC_type convert_to_BCtype(std::string name)
+{
+    if (name == "constant") {
+        return BC_type::constantBC;
+    } else if (name == "derivative") {
+        return BC_type::derivativeBC;
+    }
+    throw "Error: invalid boundary condition.\n";
+    PetscEnd();
+}
 
 // utility function for appending numbers to hdf5 filenames, if there is a series
 std::string number_filename(std::string base_filename, int counter)
@@ -24,53 +42,33 @@ void unpack(std::map<std::string, std::string> params, std::string name, T &para
 }
 
 template <> // explicit specialization for T = double
-void unpack(std::map<std::string, std::string> hash, std::string name, double & parameter)
+void unpack(std::map<std::string, std::string> hash, std::string name, double &parameter)
 {
     std::map<std::string, std::string>::iterator it;
     it = hash.find(name);
     if (it==hash.end()) { // parameter not found
-        PetscPrintf(PETSC_COMM_WORLD, "Parameter %s not found\n", name.c_str());
-        PetscEnd();
+        PetscPrintf(PETSC_COMM_WORLD, "Error: parameter %s not found\n", name.c_str());
+        PetscEnd(); // Exits
     } else { // parameter found
         parameter = std::stod(it->second);
     }
 }
 
 template <> // explicit specialization for T = int
-void unpack(std::map<std::string, std::string> hash, std::string name, int & parameter)
+void unpack(std::map<std::string, std::string> hash, std::string name, int &parameter)
 {
     std::map<std::string, std::string>::iterator it;
     it = hash.find(name);
     if (it==hash.end()) { // parameter not found
-        PetscPrintf(PETSC_COMM_WORLD, "Parameter %s not found\n", name.c_str());
+        PetscPrintf(PETSC_COMM_WORLD, "Error: parameter %s not found\n", name.c_str());
         PetscEnd();
     } else { // parameter found
         parameter = std::stoi(it->second);
     }
 }
 
-BC_type convert_to_BCtype(std::string name)
-{
-    if (name == "constant") {
-        return constantBC;
-    } else if (name == "derivative") {
-        return derivativeBC;
-    }
-    throw "Error: invalid boundary condition.\n";
-    PetscEnd();
-}
-
-// Helper function: convert user-input BC type to appropriate PETSc BC options 
-DMBoundaryType get_BC_type(BC_type type)
-{
-    if (type == periodicBC) {
-        return DM_BOUNDARY_PERIODIC;
-    }
-    return DM_BOUNDARY_GHOSTED;
-}
-
 template <> // explicit specialization for T = BC
-void unpack(std::map<std::string, std::string> hash, std::string name, BC & parameter)
+void unpack(std::map<std::string, std::string> hash, std::string name, BC &parameter)
 {
     std::map<std::string, std::string>::iterator it;
     it = hash.find(name);
@@ -87,15 +85,15 @@ void unpack(std::map<std::string, std::string> hash, std::string name, BC & para
         }
         // Now process vector of inputs
         if ((BC_input.size() == 1) && (BC_input[0] == "periodic")) {
-            parameter.lower_BC_type = periodicBC;
-            parameter.upper_BC_type = periodicBC;    
+            parameter.lower_BC_type = BC_type::periodicBC;
+            parameter.upper_BC_type = BC_type::periodicBC;    
         } else if (BC_input.size() == 4) {
             parameter.lower_BC_type = convert_to_BCtype(BC_input[0]);
             parameter.lower_BC_val = std::stod(BC_input[1]);
             parameter.upper_BC_type = convert_to_BCtype(BC_input[2]);
             parameter.upper_BC_val = std::stod(BC_input[3]);
         } else {
-            PetscPrintf(PETSC_COMM_WORLD, "Error: invalid boundary conditions!\n");
+            PetscPrintf(PETSC_COMM_WORLD, "Error: invalid boundary conditions\n");
             PetscEnd();
         }
     }
@@ -106,8 +104,8 @@ void unpack(std::map<std::string, int> name_index, std::string name, int &index)
     std::map<std::string, int>::iterator it;
     it = name_index.find(name);
     if (it==name_index.end()) { // parameter not found
-        PetscPrintf(PETSC_COMM_WORLD, "Parameter %s not found\n", name.c_str());
-        MPI_Abort(PETSC_COMM_WORLD, 0);
+        PetscPrintf(PETSC_COMM_WORLD, "Error: parameter %s not found\n", name.c_str());
+        PetscEnd();
     } else { // parameter found
         index = it->second;
     }

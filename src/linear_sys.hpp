@@ -1,8 +1,7 @@
 #ifndef LINEAR_SYS_H
 #define LINEAR_SYS_H
 
-#include <petscdm.h>
-#include <petscdmda.h>
+#include <petscsys.h>
 #include <petscksp.h>
 
 // LinearSys is a struct since its members are public and it only has constructor and 

@@ -1,3 +1,8 @@
+#include <petscsys.h>
+#include <string>
+#include <iostream>
+#include <iomanip>
+#include "petscviewerhdf5.h"
 #include "field.hpp"
 
 // constructor
