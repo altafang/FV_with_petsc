@@ -4,6 +4,7 @@
 #include <petscsys.h>
 #include <petscdm.h>
 #include <petscdmda.h>
+#include <string>
 #include "bc.hpp"
 #include "field.hpp"
 
@@ -11,7 +12,8 @@ template <typename T>
 class NonLocalField: public Field<T> // inherits from Field
 {
     public:
-        NonLocalField(DM *da, BC *x_bc, BC *y_bc, BC *z_bc, double DELTA_X);
+        NonLocalField(std::string name, DM *da, BC *x_bc, BC *y_bc, BC *z_bc, 
+                      double DELTA_X);
         ~NonLocalField();
         void send_global_to_local();
     
