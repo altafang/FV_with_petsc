@@ -12,7 +12,7 @@ template <typename T>
 class NonLocalField: public Field<T> // inherits from Field
 {
     public:
-        NonLocalField(std::string name, DM *da, BC *x_bc, BC *y_bc, BC *z_bc, 
+        NonLocalField(const std::string &name, DM *da, BC *x_bc, BC *y_bc, BC *z_bc, 
                       double DELTA_X);
         ~NonLocalField();
         void send_global_to_local();

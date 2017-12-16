@@ -12,7 +12,7 @@ template <typename T>
 class Field
 {
     public:
-        Field(std::string name, DM *da);
+        Field(const std::string &name, DM *da);
         virtual ~Field();
         void write_to_file(const std::string &filename);
         void read_from_file(const std::string &filename);

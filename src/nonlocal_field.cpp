@@ -8,9 +8,9 @@
 
 // constructor
 template <typename T>
-NonLocalField<T>::NonLocalField(std::string name, DM *da, BC *x_bc, BC *y_bc, BC *z_bc, 
-                                double DELTA_X) : Field<T>(name, da), x_bc(x_bc), 
-                                y_bc(y_bc), z_bc(z_bc), DELTA_X(DELTA_X) 
+NonLocalField<T>::NonLocalField(const std::string &name, DM *da, BC *x_bc, BC *y_bc,  
+                                BC *z_bc, double DELTA_X) : Field<T>(name, da), 
+                                x_bc(x_bc), y_bc(y_bc), z_bc(z_bc), DELTA_X(DELTA_X) 
 {
     DMCreateLocalVector(*da, &local_vec);
     DMDAVecGetArray(*da, local_vec, &local_array);
@@ -29,12 +29,14 @@ NonLocalField<T>::~NonLocalField()
 
 // Specialization of template to specific types
 // 3D fields
-template NonLocalField<double***>::NonLocalField(std::string name, DM *da, BC *x_bc, 
-                                                 BC *y_bc, BC *z_bc, double DELTA_X);
+template NonLocalField<double***>::NonLocalField(const std::string &name, DM *da, 
+                                                 BC *x_bc, BC *y_bc, BC *z_bc, 
+                                                 double DELTA_X);
 template NonLocalField<double***>::~NonLocalField();
 // 2D fields
-template NonLocalField<double**>::NonLocalField(std::string name, DM *da, BC *x_bc, 
-                                                BC *y_bc, BC *z_bc, double DELTA_X);
+template NonLocalField<double**>::NonLocalField(const std::string &name, DM *da,  
+                                                BC *x_bc, BC *y_bc, BC *z_bc, 
+                                                double DELTA_X);
 template NonLocalField<double**>::~NonLocalField();
 
 // Implementation specific to 3D

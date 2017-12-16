@@ -7,7 +7,7 @@
 
 // constructor
 template <typename T>
-Field<T>::Field(std::string name, DM *da): da(da)
+Field<T>::Field(const std::string &name, DM *da): da(da)
 {
     DMCreateGlobalVector(*da, &global_vec);
     VecSet(global_vec, 0.); // zero out the Vec to begin with.
@@ -45,12 +45,12 @@ void Field<T>::read_from_file(const std::string &filename)
 
 // Specialization of template to specific types
 // 3D fields
-template Field<double***>::Field(std::string, DM *da);
+template Field<double***>::Field(const std::string &name, DM *da);
 template Field<double***>::~Field();
 template void Field<double***>::write_to_file(const std::string &filename);
 template void Field<double***>::read_from_file(const std::string &filename);
 // 2D fields
-template Field<double**>::Field(std::string, DM *da);
+template Field<double**>::Field(const std::string &name, DM *da);
 template Field<double**>::~Field();
 template void Field<double**>::write_to_file(const std::string &filename);
 template void Field<double**>::read_from_file(const std::string &filename);
