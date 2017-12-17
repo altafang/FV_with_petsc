@@ -162,7 +162,7 @@ void PoissonSolver2D::run_solver(std::string output_file)
                 v = -coeffmxhalf;
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);
             }
-            if (j == NY - 1) {
+            if (j == NX - 1) {
                 J = Ii - NX + 1;
                 v = -coeffpxhalf;
                 MatSetValues(linear_sys->A,1,&Ii,1,&J,&v,INSERT_VALUES);

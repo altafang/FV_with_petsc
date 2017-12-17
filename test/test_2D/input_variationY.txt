@@ -1,0 +1,10 @@
+NX = 40
+NY = 60
+
+DELTA_X = 1.
+
+X_BC = periodic
+Y_BC = constant,1,constant,0
+
+
+
