@@ -16,15 +16,12 @@ enum class BC_type
 // Upper and lower boundary conditions and values
 struct BC 
 {
-    BC_type lower_BC_type;
-    double lower_BC_val;
+    // Initialize with default values
+    BC_type lower_BC_type = BC_type::derivativeBC;
+    double lower_BC_val = 0.;
 
-    BC_type upper_BC_type;
-    double upper_BC_val;
-    
-    // Constructor: default is zero-flux
-    BC() : lower_BC_type(BC_type::derivativeBC), lower_BC_val(0), 
-           upper_BC_type(BC_type::derivativeBC), upper_BC_val(0) {}
+    BC_type upper_BC_type = BC_type::derivativeBC;
+    double upper_BC_val = 0.;
            
     // Helper function to convert to PETSc's DMDA boundary condition types
     DMBoundaryType get_DMBoundaryType()

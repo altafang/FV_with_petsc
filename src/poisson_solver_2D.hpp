@@ -29,7 +29,7 @@ class PoissonSolver2D
         LinearSys *linear_sys;
         int NX, NY;
         double DELTA_X;
-        BC X_BC, Y_BC;
+        BC X_BC, Y_BC, zeroflux;
 };
 
 #endif

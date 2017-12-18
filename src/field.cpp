@@ -12,7 +12,7 @@ Field<T>::Field(const std::string &name, DM *da): da(da)
     DMCreateGlobalVector(*da, &global_vec);
     VecSet(global_vec, 0.); // zero out the Vec to begin with.
     DMDAVecGetArray(*da, global_vec, &global_array);
-    PetscObjectSetName((PetscObject)global_vec, name.c_str());
+    PetscObjectSetName(reinterpret_cast<PetscObject>(global_vec), name.c_str());
 }
 
 // destructor

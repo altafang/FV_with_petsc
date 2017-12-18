@@ -39,7 +39,6 @@ PoissonSolver2D::PoissonSolver2D(std::string input_file, std::string sigma_file,
     phi = new NonLocalField<double**>("phi", &da, &X_BC, &Y_BC, NULL, DELTA_X);
     
     // Zero derivative boundary conditions in all directions for sigma
-    BC zeroflux;
     sigma = new NonLocalField<double**>("sigma", &da, &zeroflux, &zeroflux, NULL, 
                                         DELTA_X);
     

@@ -44,7 +44,6 @@ PoissonSolver3D::PoissonSolver3D(std::string input_file, std::string sigma_file,
     phi = new NonLocalField<double***>("phi", &da, &X_BC, &Y_BC, &Z_BC, DELTA_X);
     
     // Zero derivative boundary conditions in all directions for sigma
-    BC zeroflux;
     sigma = new NonLocalField<double***>("sigma", &da, &zeroflux, &zeroflux, &zeroflux, 
                                          DELTA_X);
     

@@ -52,7 +52,7 @@ void NonLocalField<double***>::send_global_to_local()
     DMDAGetInfo(*(this->da), NULL, &nx, &ny, &nz, NULL, NULL, NULL, NULL, NULL, NULL, 
                 NULL, NULL, NULL);
     DMDAGetCorners(*(this->da), &xs, &ys, &zs, &xm, &ym, &zm);
-    // z BCs
+
     if (zs == 0) {
         if (z_bc->lower_BC_type == BC_type::derivativeBC) {
             for (int j = ys; j < ys+ym; ++j) {
@@ -160,7 +160,7 @@ void NonLocalField<double**>::send_global_to_local()
     DMGlobalToLocalBegin(*(this->da), global_vec, INSERT_VALUES, local_vec);
     DMGlobalToLocalEnd(*(this->da), global_vec, INSERT_VALUES, local_vec);
     
-    /* Fill in upper and lower boundary conditions */
+    // Fill in upper and lower boundary conditions 
     int xs, ys, xm, ym, nx, ny;
     DMDAGetInfo(*(this->da), NULL, &nx, &ny, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
                 NULL, NULL, NULL);
